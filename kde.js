@@ -23,6 +23,7 @@ var _getSync=function(paths,opts) {
 }
 */
 var _gets=function(paths,opts,cb) { //get many data with one call
+
 	if (!paths) return ;
 	if (typeof paths=='string') {
 		paths=[paths];
@@ -129,6 +130,7 @@ var localengine_get=function(path,opts,cb) {
 		if (cb) cb(null);
 		return null;
 	}
+
 	if (typeof cb!="function") {
 		return engine.kdb.get(path,opts);
 	}
@@ -140,7 +142,9 @@ var localengine_get=function(path,opts,cb) {
 	} else if (typeof path[0] =="object") {
 		return _gets.apply(engine,[path,opts,cb]);
 	} else {
-		cb(null);	
+		engine.kdb.get([],opts,function(data){
+			cb(data[0]);//return top level keys
+		});
 	}
 };	
 
@@ -275,7 +279,7 @@ var openLocalKsanagap=function(kdbid,opts,cb,context) {
 				if (err) {
 					cb.apply(context,[err]);
 				} else {
-					createLocalEngine(kdb,function(engine){
+					createLocalEngine(kdb,opts,function(engine){
 						localPool[kdbid]=engine;
 						cb.apply(context||engine.context,[0,engine]);
 					},context);
@@ -318,9 +322,9 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 	if (kdbfn.indexOf(".kdb")==-1) kdbfn+=".kdb";
 	new Kdb.open(kdbfn,function(err,handle){
 		if (err) {
-			cb.apply(context||engine.content,[err]);
+			cb.apply(context,[err]);
 		} else {
-			createLocalEngine(handle,function(engine){
+			createLocalEngine(handle,opts,function(engine){
 				localPool[kdbid]=engine;
 				cb.apply(context||engine.context,[0,engine]);
 			},context);
