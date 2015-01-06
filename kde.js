@@ -57,68 +57,66 @@ var _gets=function(paths,opts,cb) { //get many data with one call
 var getFileRange=function(i) {
 	var engine=this;
 
-	var filePageCount=engine.get(["filePageCount"]);
-	if (filePageCount) {
+	var filesegcount=engine.get(["filesegcount"]);
+	if (filesegcount) {
 		if (i==0) {
-			return {start:0,end:filePageCount[0]-1};
+			return {start:0,end:filesegcount[0]-1};
 		} else {
-			return {start:filePageCount[i-1],end:filePageCount[i]-1};
+			return {start:filesegcount[i-1],end:filesegcount[i]-1};
 		}
 	}
-
 	//old buggy code
-	var fileNames=engine.get(["fileNames"]);
-	var fileOffsets=engine.get(["fileOffsets"]);
-	var pageOffsets=engine.get(["pageOffsets"]);
-	var pageNames=engine.get(["pageNames"]);
-	var fileStart=fileOffsets[i], fileEnd=fileOffsets[i+1]-1;
+	var filenames=engine.get(["filenames"]);
+	var fileoffsets=engine.get(["fileoffsets"]);
+	var segoffsets=engine.get(["segoffsets"]);
+	var segnames=engine.get(["segnames"]);
+	var filestart=fileoffsets[i], fileend=fileoffsets[i+1]-1;
 
-	
-	var start=bsearch(pageOffsets,fileStart,true);	
-	//if (pageOffsets[start]==fileStart) start--;
+	var start=bsearch(segoffsets,filestart,true);
+	//if (segOffsets[start]==fileStart) start--;
 	
 	//work around for jiangkangyur
-	while (pageNames[start+1]=="_") start++;
+	while (segNames[start+1]=="_") start++;
 
   //if (i==0) start=0; //work around for first file
-	var end=bsearch(pageOffsets,fileEnd,true);
+	var end=bsearch(segoffsets,fileend,true);
 	return {start:start,end:end};
 }
 
-var getfp=function(absolutepage) {
-	var fileOffsets=this.get(["fileOffsets"]);
-	var pageOffsets=this.get(["pageOffsets"]);
-	var pageoffset=pageOffsets[absolutepage];
-	var file=bsearch(fileOffsets,pageoffset,true)-1;
+var getfileseg=function(absoluteseg) {
+	var fileoffsets=this.get(["fileoffsets"]);
+	var segoffsets=this.get(["segoffsets"]);
+	var segoffset=segOffsets[absoluteseg];
+	var file=bsearch(fileOffsets,segoffset,true)-1;
 
-	var fileStart=fileOffsets[file];
-	var start=bsearch(pageOffsets,fileStart,true);	
+	var fileStart=fileoffsets[file];
+	var start=bsearch(segoffsets,fileStart,true);	
 
-	var page=absolutepage-start-1;
-	return {file:file,page:page};
+	var seg=absoluteseg-start-1;
+	return {file:file,seg:seg};
 }
-//return array of object of nfile npage given pagename
-var findPage=function(pagename) {
-	var pagenames=this.get("pageNames");
+//return array of object of nfile nseg given segname
+var findSeg=function(segname) {
+	var segnames=this.get("segnames");
 	var out=[];
-	for (var i=0;i<pagenames.length;i++) {
-		if (pagenames[i]==pagename) {
-			var fp=getfp.apply(this,[i]);
-			out.push({file:fp.file,page:fp.page,abspage:i});
+	for (var i=0;i<segnames.length;i++) {
+		if (segnames[i]==segname) {
+			var fileseg=getfileseg.apply(this,[i]);
+			out.push({file:fileseg.file,seg:fileseg.seg,absseg:i});
 		}
 	}
 	return out;
 }
-var getFilePageOffsets=function(i) {
-	var pageOffsets=this.get("pageOffsets");
+var getFileSegOffsets=function(i) {
+	var segoffsets=this.get("segoffsets");
 	var range=getFileRange.apply(this,[i]);
-	return pageOffsets.slice(range.start,range.end+1);
+	return segoffsets.slice(range.start,range.end+1);
 }
 
-var getFilePageNames=function(i) {
+var getFileSegNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
-	var pageNames=this.get("pageNames");
-	return pageNames.slice(range.start,range.end+1);
+	var segnames=this.get("segnames");
+	return segnames.slice(range.start,range.end+1);
 }
 var localengine_get=function(path,opts,cb) {
 	var engine=this;
@@ -149,7 +147,7 @@ var localengine_get=function(path,opts,cb) {
 };	
 
 var getPreloadField=function(user) {
-	var preload=[["meta"],["fileNames"],["fileOffsets"],["pageNames"],["pageOffsets"],["filePageCount"]];
+	var preload=[["meta"],["filenames"],["fileoffsets"],["segnames"],["segoffsets"],["filesegcount"]];
 	//["tokens"],["postingslen"] kse will load it
 	if (user && user.length) { //user supply preload
 		for (var i=0;i<user.length;i++) {
@@ -166,13 +164,12 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	if (typeof context=="object") engine.context=context;
 	engine.get=localengine_get;
 
+	engine.segOffset=segOffset;
 	engine.fileOffset=fileOffset;
-	engine.folderOffset=folderOffset;
-	engine.pageOffset=pageOffset;
-	engine.getFilePageNames=getFilePageNames;
-	engine.getFilePageOffsets=getFilePageOffsets;
+	engine.getFileSegNames=getFileSegNames;
+	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
-	engine.findPage=findPage;
+	engine.findSeg=findSeg;
 	//only local engine allow getSync
 	//if (kdb.fs.getSync) engine.getSync=engine.kdb.getSync;
 	
@@ -200,20 +197,20 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	return engine;
 }
 
-var pageOffset=function(pagename) {
+var segOffset=function(segname) {
 	var engine=this;
-	if (arguments.length>1) throw "argument : pagename ";
+	if (arguments.length>1) throw "argument : segname ";
 
-	var pageNames=engine.get("pageNames");
-	var pageOffsets=engine.get("pageOffsets");
+	var segNames=engine.get("segnames");
+	var segOffsets=engine.get("segoffsets");
 
-	var i=pageNames.indexOf(pagename);
-	return (i>-1)?pageOffsets[i]:0;
+	var i=segNames.indexOf(segname);
+	return (i>-1)?segOffsets[i]:0;
 }
 var fileOffset=function(fn) {
 	var engine=this;
-	var filenames=engine.get("fileNames");
-	var offsets=engine.get("fileOffsets");
+	var filenames=engine.get("filenames");
+	var offsets=engine.get("fileoffsets");
 	var i=filenames.indexOf(fn);
 	if (i==-1) return null;
 	return {start: offsets[i], end:offsets[i+1]};
@@ -222,8 +219,8 @@ var fileOffset=function(fn) {
 var folderOffset=function(folder) {
 	var engine=this;
 	var start=0,end=0;
-	var filenames=engine.get("fileNames");
-	var offsets=engine.get("fileOffsets");
+	var filenames=engine.get("filenames");
+	var offsets=engine.get("fileoffsets");
 	for (var i=0;i<filenames.length;i++) {
 		if (filenames[i].substring(0,folder.length)==folder) {
 			if (!start) start=offsets[i];
