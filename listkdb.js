@@ -29,12 +29,32 @@ var listkdb_node=function(){
 	})
 	return output;
 }
-
+var fileNameOnly=function(fn) {
+	var at=fn.lastIndexOf("/");
+	if (at>-1) return fn.substr(at+1);
+	return fn;
+}
+var listkdb_ksanagap=function() {
+	var output=[];
+	var apps=JSON.parse(kfs.listApps());
+	for (var i=0;i<apps.length;i++) {
+		var app=apps[i];
+		if (app.files) for (var j=0;j<app.files.length;j++) {
+			var file=app.files[j];
+			if (file.substr(file.length-4)==".kdb") {
+				output.push([app.dbid,fileNameOnly(file)]);
+			}
+		}
+	};
+	return output;
+}
 var listkdb=function() {
 	var platform=require("./platform").getPlatform();
 	var files=[];
 	if (platform=="node" || platform=="node-webkit") {
 		files=listkdb_node();
+	} else if (typeof kfs!="undefined") {
+		files=listkdb_ksanagap();
 	} else {
 		throw "not implement yet";
 	}
