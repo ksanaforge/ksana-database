@@ -366,4 +366,4 @@ var enumKdb=function(cb,context){
 	return kdbs.map(function(k){return k[0]});
 }
 
-module.exports={open:openLocal,setPath:setPath, close:closeLocal, enumKdb:enumKdb};
+module.exports={open:openLocal,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch};
