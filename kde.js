@@ -86,8 +86,8 @@ var getFileRange=function(i) {
 var getfileseg=function(absoluteseg) {
 	var fileoffsets=this.get(["fileoffsets"]);
 	var segoffsets=this.get(["segoffsets"]);
-	var segoffset=segOffsets[absoluteseg];
-	var file=bsearch(fileOffsets,segoffset,true)-1;
+	var segoffset=segoffsets[absoluteseg];
+	var file=bsearch(fileoffsets,segoffset,true)-1;
 
 	var fileStart=fileoffsets[file];
 	var start=bsearch(segoffsets,fileStart,true);	
@@ -112,20 +112,25 @@ var getFileSegOffsets=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	return segoffsets.slice(range.start,range.end+1);
 }
-
+var getFileSegByVpos=function(vpos) {
+	var segoffsets=this.get(["segoffsets"]);
+	var i=bsearch(segoffsets,vpos,true);
+	return getfileseg.apply(this,[i]);
+}
 var getFileSegNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	var segnames=this.get("segnames");
 	return segnames.slice(range.start,range.end+1);
 }
-var localengine_get=function(path,opts,cb) {
+var localengine_get=function(path,opts,cb,context) {
 	var engine=this;
 	if (typeof opts=="function") {
+		context=cb;
 		cb=opts;
 		opts={recursive:false};
 	}
 	if (!path) {
-		if (cb) cb(null);
+		if (cb) cb.apply(context,[null]);
 		return null;
 	}
 
@@ -134,15 +139,15 @@ var localengine_get=function(path,opts,cb) {
 	}
 
 	if (typeof path=="string") {
-		return engine.kdb.get([path],opts,cb);
+		return engine.kdb.get([path],opts,cb,context);
 	} else if (typeof path[0] =="string") {
-		return engine.kdb.get(path,opts,cb);
+		return engine.kdb.get(path,opts,cb,context);
 	} else if (typeof path[0] =="object") {
-		return _gets.apply(engine,[path,opts,cb]);
+		return _gets.apply(engine,[path,opts,cb,context]);
 	} else {
 		engine.kdb.get([],opts,function(data){
-			cb(data[0]);//return top level keys
-		});
+			cb.apply(context,[data]);//return top level keys
+		},context);
 	}
 };	
 
@@ -170,6 +175,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
 	engine.findSeg=findSeg;
+	engine.getFileSegByVpos=getFileSegByVpos;
 	//only local engine allow getSync
 	//if (kdb.fs.getSync) engine.getSync=engine.kdb.getSync;
 	
