@@ -83,25 +83,41 @@ var getFileRange=function(i) {
 	return {start:start,end:end};
 }
 
-var getfileseg=function(absoluteseg) {
-	var fileoffsets=this.get(["fileoffsets"]);
-	var segoffsets=this.get(["segoffsets"]);
-	var segoffset=segoffsets[absoluteseg];
-	var file=bsearch(fileoffsets,segoffset,true)-1;
-
-	var fileStart=fileoffsets[file];
-	var start=bsearch(segoffsets,fileStart,true);	
-
-	var seg=absoluteseg-start-1;
-	return {file:file,seg:seg};
+var absSegToFileSeg=function(absoluteseg) {
+	var filesegcount=this.get("filesegcount");
+	var s=absoluteseg;
+	var file=0;
+	while (s>filesegcount[file]) {
+		s-=filesegcount[file];
+		file++;
+	}
+	return {file:file,seg:s};
 }
+
+var fileSegToAbsSeg=function(file,seg) {
+	if (file==0)return seg;
+	return this.get("filesegcount")[file-1]+seg;
+}
+/*
+var vposToFileSeg=function(engine,vpos) {
+    var segoffsets=engine.get("segoffsets");
+    var fileoffsets=engine.get(["fileoffsets"]);
+    var segnames=engine.get("segnames");
+    var fileid=bsearch(fileoffsets,vpos+1,true);
+    fileid--;
+    var segid=bsearch(segoffsets,vpos+1,true);
+	var range=engine.getFileRange(fileid);
+	segid-=range.start;
+    return {file:fileid,seg:segid};
+}
+*/
 //return array of object of nfile nseg given segname
 var findSeg=function(segname) {
 	var segnames=this.get("segnames");
 	var out=[];
 	for (var i=0;i<segnames.length;i++) {
 		if (segnames[i]==segname) {
-			var fileseg=getfileseg.apply(this,[i]);
+			var fileseg=absSegToFileSeg.apply(this,[i]);
 			out.push({file:fileseg.file,seg:fileseg.seg,absseg:i});
 		}
 	}
@@ -112,11 +128,12 @@ var getFileSegOffsets=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	return segoffsets.slice(range.start,range.end+1);
 }
-var getFileSegByVpos=function(vpos) {
+var fileSegFromVpos=function(vpos) {
 	var segoffsets=this.get(["segoffsets"]);
 	var i=bsearch(segoffsets,vpos,true);
-	return getfileseg.apply(this,[i]);
+	return absSegToFileSeg.apply(this,[i]);
 }
+
 var getFileSegNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	var segnames=this.get("segnames");
@@ -175,7 +192,12 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
 	engine.findSeg=findSeg;
-	engine.getFileSegByVpos=getFileSegByVpos;
+	engine.absSegToFileSeg=absSegToFileSeg;
+	engine.fileSegToAbsSeg=fileSegToAbsSeg;
+	engine.fileSegFromVpos=fileSegFromVpos;
+	
+	//engine.fileSegToVpos=fileSegToVpos;
+	//engine.vposToFileSeg=vposToFileSeg;
 	//only local engine allow getSync
 	//if (kdb.fs.getSync) engine.getSync=engine.kdb.getSync;
 	
