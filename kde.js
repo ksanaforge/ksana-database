@@ -133,6 +133,11 @@ var fileSegFromVpos=function(vpos) {
 	var i=bsearch(segoffsets,vpos,true);
 	return absSegToFileSeg.apply(this,[i]);
 }
+var fileSegToVpos=function(f,s) {
+	var segoffsets=this.get(["segoffsets"]);
+	var seg=fileSegToAbsSeg(f,s);
+	return segoffsets[seg];
+}
 
 var getFileSegNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
@@ -195,6 +200,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	engine.absSegToFileSeg=absSegToFileSeg;
 	engine.fileSegToAbsSeg=fileSegToAbsSeg;
 	engine.fileSegFromVpos=fileSegFromVpos;
+	engine.fileSegToVpos=fileSegToVpos;
 	
 	//engine.fileSegToVpos=fileSegToVpos;
 	//engine.vposToFileSeg=vposToFileSeg;
