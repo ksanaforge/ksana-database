@@ -95,8 +95,8 @@ var absSegToFileSeg=function(absoluteseg) {
 }
 
 var fileSegToAbsSeg=function(file,seg) {
-	if (file==0)return seg-1;
-	return this.get("filesegcount")[file-1]+(seg-1);
+	if (file==0)return seg;
+	return this.get("filesegcount")[file]+(seg);
 }
 /*
 var vposToFileSeg=function(engine,vpos) {
@@ -134,7 +134,9 @@ var getFileSegOffsets=function(i) {
 	
 
 }
-var fileSegFromVpos=function(vpos) {
+
+//TODO , this two function should be interchangable 
+var fileSegFromVpos=function(vpos) { 
 	var segoffsets=this.get(["segoffsets"]);
 	var i=bsearch(segoffsets,vpos,true);
 	while (segoffsets[i]==vpos) i++;
@@ -143,7 +145,7 @@ var fileSegFromVpos=function(vpos) {
 var fileSegToVpos=function(f,s) {
 	var segoffsets=this.get(["segoffsets"]);
 	var seg=fileSegToAbsSeg(f,s);
-	return segoffsets[seg];
+	return segoffsets[seg-1];
 }
 
 var getFileSegNames=function(i) {
