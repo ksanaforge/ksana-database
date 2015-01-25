@@ -95,8 +95,8 @@ var absSegToFileSeg=function(absoluteseg) {
 }
 
 var fileSegToAbsSeg=function(file,seg) {
-	if (file==0)return seg;
-	return this.get("filesegcount")[file-1]+seg;
+	if (file==0)return seg-1;
+	return this.get("filesegcount")[file-1]+(seg-1);
 }
 /*
 var vposToFileSeg=function(engine,vpos) {
@@ -126,11 +126,18 @@ var findSeg=function(segname) {
 var getFileSegOffsets=function(i) {
 	var segoffsets=this.get("segoffsets");
 	var range=getFileRange.apply(this,[i]);
-	return segoffsets.slice(range.start,range.end+1);
+	if (segoffsets.subarray) {
+		return segoffsets.subarray(range.start,range.end+1);
+	} else {
+		return segoffsets.slice(range.start,range.end+1);	
+	}
+	
+
 }
 var fileSegFromVpos=function(vpos) {
 	var segoffsets=this.get(["segoffsets"]);
 	var i=bsearch(segoffsets,vpos,true);
+	while (segoffsets[i]==vpos) i++;
 	return absSegToFileSeg.apply(this,[i]);
 }
 var fileSegToVpos=function(f,s) {
