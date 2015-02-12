@@ -135,7 +135,6 @@ var getFileSegOffsets=function(i) {
 
 }
 
-//TODO , this two function should be interchangable 
 var fileSegFromVpos=function(vpos) { 
 	var segoffsets=this.get(["segoffsets"]);
 	var i=bsearch(segoffsets,vpos,true);
