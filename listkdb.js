@@ -1,10 +1,8 @@
 /* return array of dbid and absolute path*/
-var listkdb_html5=function() {
-	throw "not implement yet";
-	require("ksana-jsonrom").html5fs.readdir(function(kdbs){
+var listkdb_html5=function(cb,context) {
+	require("ksana2015-webruntime").html5fs.readdir(function(kdbs){
 			cb.apply(this,[kdbs]);
 	},context||this);		
-
 }
 
 var listkdb_node=function(){
@@ -48,15 +46,15 @@ var listkdb_ksanagap=function() {
 	};
 	return output;
 }
-var listkdb=function() {
+var listkdb=function(cb,context) {
 	var platform=require("./platform").getPlatform();
 	var files=[];
 	if (platform=="node" || platform=="node-webkit") {
 		files=listkdb_node();
-	} else if (typeof kfs!="undefined") {
-		files=listkdb_ksanagap();
+	} else if (platform=="chrome") {
+		files=listkdb_html5(cb,context);
 	} else {
-		throw "not implement yet";
+		files=listkdb_ksanagap();
 	}
 	return files;
 }

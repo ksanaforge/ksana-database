@@ -399,7 +399,15 @@ var setPath=function(path) {
 }
 
 var enumKdb=function(cb,context){
-	return kdbs.map(function(k){return k[0]});
+	if (kdbs.length) return kdbs.map(function(k){return k[0]});
+
+	if (!kdblisted) {
+		require("./listkdb")(function(files){
+			kdbs=files;
+			cb.call(context, kdbs.map(function(k){return k[0]}) );
+		});
+		kdblisted=true;
+	}
 }
 
 module.exports={open:openLocal,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch};
