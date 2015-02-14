@@ -201,6 +201,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 
 	engine.segOffset=segOffset;
 	engine.fileOffset=fileOffset;
+	engine.folderOffset=folderOffset;
 	engine.getFileSegNames=getFileSegNames;
 	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
