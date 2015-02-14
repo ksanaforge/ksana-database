@@ -1,6 +1,6 @@
 {
   "name": "ksana-database",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "romable json file format",
   "scripts": {
     "test": "node test/test.js"

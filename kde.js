@@ -123,6 +123,14 @@ var findSeg=function(segname) {
 	}
 	return out;
 }
+var findFile=function(filename) {
+	var filenames=this.get("filenames");
+	for (var i=0;i<filenames.length;i++) {
+		if (filenames[i]===filename) return i;
+	}
+	return -1;
+}
+
 var getFileSegOffsets=function(i) {
 	var segoffsets=this.get("segoffsets");
 	var range=getFileRange.apply(this,[i]);
@@ -206,6 +214,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
 	engine.findSeg=findSeg;
+	engine.findFile=findFile;
 	engine.absSegToFileSeg=absSegToFileSeg;
 	engine.fileSegToAbsSeg=fileSegToAbsSeg;
 	engine.fileSegFromVpos=fileSegFromVpos;
