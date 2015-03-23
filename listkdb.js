@@ -1,7 +1,7 @@
 /* return array of dbid and absolute path*/
 var listkdb_html5=function(cb,context) {
 	ksana.runtime.html5fs.readdir(function(kdbs){
-			cb.apply(this,[kdbs]);
+		cb.call(this,kdbs);
 	},context||this);		
 }
 

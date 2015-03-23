@@ -224,6 +224,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	engine.fileSegFromVpos=fileSegFromVpos;
 	engine.absSegFromVpos=absSegFromVpos;
 	engine.fileSegToVpos=fileSegToVpos;
+	engine.exportAs=require('./exportas');
 	
 	//engine.fileSegToVpos=fileSegToVpos;
 	//engine.vposToFileSeg=vposToFileSeg;
