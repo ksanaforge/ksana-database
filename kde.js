@@ -123,6 +123,21 @@ var findSeg=function(segname) {
 	}
 	return out;
 }
+
+var findFirstSeg=function(segs) {
+	if (typeof segs=="string") {
+		segs=[segs];
+	}
+	var segnames=this.get("segnames");
+	var out=[];
+	for (var i=0;i<segs.length;i++) {
+		idx=segnames.indexOf(segs[i])
+		var fileseg=absSegToFileSeg.apply(this,[idx]);
+		out.push({file:fileseg.file,seg:fileseg.seg,absseg:idx});
+	}
+	return out;
+}
+
 var findFile=function(filename) {
 	var filenames=this.get("filenames");
 	for (var i=0;i<filenames.length;i++) {
@@ -218,6 +233,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
 	engine.findSeg=findSeg;
+	engine.findFirstSeg=findFirstSeg;
 	engine.findFile=findFile;
 	engine.absSegToFileSeg=absSegToFileSeg;
 	engine.fileSegToAbsSeg=fileSegToAbsSeg;
