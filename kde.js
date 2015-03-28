@@ -76,7 +76,7 @@ var getFileRange=function(i) {
 	//if (segOffsets[start]==fileStart) start--;
 	
 	//work around for jiangkangyur
-	while (segNames[start+1]=="_") start++;
+	//while (segNames[start+1]=="_") start++;
 
   //if (i==0) start=0; //work around for first file
 	var end=bsearch(segoffsets,fileend,true);

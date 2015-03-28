@@ -7,7 +7,7 @@ var injectTag=function(content,tagoffsets,tags,start,end) {
 		if (offset===i && n<end) {
 			out+="<"+tags[n]+">";
 			offset=tagoffsets[++n];
-			if (n==end) { //no more tag, copy rest text
+			if (n===end) { //no more tag, copy rest text
 				out+=content.substr(i);
 				break;
 			}			
