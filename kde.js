@@ -1,11 +1,11 @@
-/* Ksana Database Engine
+// Ksana Database Engine
 
-   2015/1/2 , 
-   move to ksana-database
-   simplified by removing document support and socket.io support
+//   2015/1/2 , 
+//   move to ksana-database
+//   simplified by removing document support and socket.io support
 
 
-*/
+
 var pool={},localPool={};
 var apppath="";
 var bsearch=require("./bsearch");
@@ -13,15 +13,7 @@ var Kdb=require('ksana-jsonrom');
 var kdbs=[]; //available kdb , id and absolute path
 var strsep="\uffff";
 var kdblisted=false;
-/*
-var _getSync=function(paths,opts) {
-	var out=[];
-	for (var i in paths) {
-		out.push(this.getSync(paths[i],opts));	
-	}
-	return out;
-}
-*/
+
 var _gets=function(paths,opts,cb) { //get many data with one call
 
 	if (!paths) return ;
@@ -98,19 +90,19 @@ var fileSegToAbsSeg=function(file,seg) {
 	if (file==0)return seg;
 	return this.get("filesegcount")[file]+(seg);
 }
-/*
-var vposToFileSeg=function(engine,vpos) {
-    var segoffsets=engine.get("segoffsets");
-    var fileoffsets=engine.get(["fileoffsets"]);
-    var segnames=engine.get("segnames");
-    var fileid=bsearch(fileoffsets,vpos+1,true);
-    fileid--;
-    var segid=bsearch(segoffsets,vpos+1,true);
-	var range=engine.getFileRange(fileid);
-	segid-=range.start;
-    return {file:fileid,seg:segid};
-}
-*/
+
+//var vposToFileSeg=function(engine,vpos) {
+//    var segoffsets=engine.get("segoffsets");
+//    var fileoffsets=engine.get(["fileoffsets"]);
+//    var segnames=engine.get("segnames");
+//    var fileid=bsearch(fileoffsets,vpos+1,true);
+//    fileid--;
+//    var segid=bsearch(segoffsets,vpos+1,true);
+//	var range=engine.getFileRange(fileid);
+//	segid-=range.start;
+//    return {file:fileid,seg:segid};
+//}
+
 //return array of object of nfile nseg given segname
 var findSeg=function(segname) {
 	var segnames=this.get("segnames");
@@ -123,21 +115,6 @@ var findSeg=function(segname) {
 	}
 	return out;
 }
-
-var findFirstSeg=function(segs) {
-	if (typeof segs=="string") {
-		segs=[segs];
-	}
-	var segnames=this.get("segnames");
-	var out=[];
-	for (var i=0;i<segs.length;i++) {
-		idx=segnames.indexOf(segs[i])
-		var fileseg=absSegToFileSeg.apply(this,[idx]);
-		out.push({file:fileseg.file,seg:fileseg.seg,absseg:idx});
-	}
-	return out;
-}
-
 var findFile=function(filename) {
 	var filenames=this.get("filenames");
 	for (var i=0;i<filenames.length;i++) {
@@ -233,14 +210,12 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
 	engine.findSeg=findSeg;
-	engine.findFirstSeg=findFirstSeg;
 	engine.findFile=findFile;
 	engine.absSegToFileSeg=absSegToFileSeg;
 	engine.fileSegToAbsSeg=fileSegToAbsSeg;
 	engine.fileSegFromVpos=fileSegFromVpos;
 	engine.absSegFromVpos=absSegFromVpos;
 	engine.fileSegToVpos=fileSegToVpos;
-	engine.exportAs=require('./exportas');
 	
 	//engine.fileSegToVpos=fileSegToVpos;
 	//engine.vposToFileSeg=vposToFileSeg;
@@ -321,13 +296,13 @@ var close=function(kdbid) {
 	}
 }
 
-var getLocalTries=function(kdbfn) {
-	if (!kdblisted) {
-		kdbs=require("./listkdb")();
-		kdblisted=true;
-	}
 
-	var kdbid=kdbfn.replace('.kdb','');
+require("./listkdb")(function(_kdbs){
+	kdbs=_kdbs;
+});
+
+var getLocalTries=function(kdbfn,cb) {
+	kdbid=kdbfn.replace('.kdb','');
 	var tries= ["./"+kdbid+".kdb"
 	           ,"../"+kdbid+".kdb"
 	];
@@ -337,8 +312,25 @@ var getLocalTries=function(kdbfn) {
 			tries.push(kdbs[i][1]);
 		}
 	}
-	return tries;
+	return tries;;
 }
+
+var openLocalReactNative=function(kdbid,opts,cb,context) {
+	if (kdbid.indexOf(".kdb")==-1) kdbid+=".kdb";
+	new Kdb.open(kdbid,function(err,kdb){
+		console.log(err,kdb)
+				if (err) {
+					cb.apply(context,[err]);
+				} else {
+					createLocalEngine(kdb,opts,function(engine){
+						localPool[kdbid]=engine;
+						cb.apply(context||engine.context,[0,engine]);
+					},context);
+				}
+			});
+}
+
+
 var openLocalKsanagap=function(kdbid,opts,cb,context) {
 	var kdbfn=kdbid;
 	var tries=getLocalTries(kdbfn);
@@ -421,6 +413,8 @@ var openLocal=function(kdbid,opts,cb,context)  {
 		openLocalNode(kdbid,opts,cb,context);
 	} else if (platform=="html5" || platform=="chrome"){
 		openLocalHtml5(kdbid,opts,cb,context);		
+	} else if (platform=="react-native") {
+		openLocalReactNative(kdbid,opts,cb,context);	
 	} else {
 		openLocalKsanagap(kdbid,opts,cb,context);	
 	}
@@ -441,5 +435,7 @@ var enumKdb=function(cb,context){
 		kdblisted=true;
 	}
 }
+
+
 
 module.exports={open:openLocal,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch};

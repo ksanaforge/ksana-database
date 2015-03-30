@@ -1,6 +1,11 @@
 var getPlatform=function() {
 	if (typeof ksanagap=="undefined") {
-		platform="node";
+		try {
+			require("react-native");
+			platform="react-native";
+		} catch (e) {
+			platform="node";	
+		}
 	} else {
 		platform=ksanagap.platform;
 	}
