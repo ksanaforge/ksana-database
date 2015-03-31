@@ -318,16 +318,15 @@ var getLocalTries=function(kdbfn,cb) {
 var openLocalReactNative=function(kdbid,opts,cb,context) {
 	if (kdbid.indexOf(".kdb")==-1) kdbid+=".kdb";
 	new Kdb.open(kdbid,function(err,kdb){
-		console.log(err,kdb)
-				if (err) {
-					cb.apply(context,[err]);
-				} else {
-					createLocalEngine(kdb,opts,function(engine){
-						localPool[kdbid]=engine;
-						cb.apply(context||engine.context,[0,engine]);
-					},context);
-				}
-			});
+		if (err) {
+			cb.apply(context,[err]);
+		} else {
+			createLocalEngine(kdb,opts,function(engine){
+				localPool[kdbid]=engine;
+				cb.apply(context||engine.context,[0,engine]);
+			},context);
+		}
+	});
 }
 
 
