@@ -32,4 +32,4 @@ var bsearchNear=function(array,value) {
 	return bsearch(array,value,true);
 }
 
-module.exports=bsearch;//{bsearchNear:bsearchNear,bsearch:bsearch};
+module.exports=bsearch;
