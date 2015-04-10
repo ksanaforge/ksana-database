@@ -88,7 +88,7 @@ var absSegToFileSeg=function(absoluteseg) {
 
 var fileSegToAbsSeg=function(file,seg) {
 	if (file==0)return seg;
-	return this.get("filesegcount")[file]+(seg);
+	return this.get("filesegcount")[file-1]+(seg);
 }
 
 //var vposToFileSeg=function(engine,vpos) {
@@ -147,7 +147,7 @@ var fileSegFromVpos=function(vpos) {
 }
 var fileSegToVpos=function(f,s) {
 	var segoffsets=this.get(["segoffsets"]);
-	var seg=fileSegToAbsSeg(f,s);
+	var seg=fileSegToAbsSeg.call(this,f,s);
 	return segoffsets[seg-1];
 }
 
