@@ -59,8 +59,10 @@ var listkdb_ksanagap=function(cb,context) {
 	}
 }
 var listkdb=function(cb,context) {
+
 	var platform=require("./platform").getPlatform();
 	var files=[];
+
 	if (platform=="node" || platform=="node-webkit") {
 		listkdb_node(cb,context);
 	} else if (platform=="chrome") {
