@@ -312,6 +312,7 @@ var getLocalTries=function(kdbfn,cb) {
 }
 
 var openLocalReactNative=function(kdbid,opts,cb,context) {
+
 	if (kdbid.indexOf(".kdb")==-1) kdbid+=".kdb";
 	new Kdb.open(kdbid,function(err,kdb){
 		if (err) {
@@ -391,12 +392,13 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 }
 //omit cb for syncronize open
 var openLocal=function(kdbid,opts,cb,context)  {
+	console.log("open react native",kdbid)
 	if (typeof opts=="function") { //no opts
 		if (typeof cb=="object") context=cb;
 		cb=opts;
 		opts={};
 	}
-
+	
 	var engine=localPool[kdbid];
 	if (engine) {
 		if (cb) cb.apply(context||engine.context,[0,engine]);

@@ -49,9 +49,8 @@ var listkdb_ksanagap=function(cb,context) {
 		};	
 		cb.call(context,output);	
 	}
-
 	if (kfs.listApps.length==1) {
-		formatapp(JSON.parse(kfs.listApps()));
+		formatoutput(JSON.parse(kfs.listApps()));
 	} else {
 		kfs.listApps(function(apps){
 			formatoutput(JSON.parse(apps));
@@ -59,8 +58,10 @@ var listkdb_ksanagap=function(cb,context) {
 	}
 }
 var listkdb=function(cb,context) {
+
 	var platform=require("./platform").getPlatform();
 	var files=[];
+
 	if (platform=="node" || platform=="node-webkit") {
 		listkdb_node(cb,context);
 	} else if (platform=="chrome") {
