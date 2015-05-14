@@ -297,10 +297,6 @@ var close=function(kdbid) {
 }
 
 
-require("./listkdb")(function(_kdbs){
-	kdbs=_kdbs;
-});
-
 var getLocalTries=function(kdbfn,cb) {
 	kdbid=kdbfn.replace('.kdb','');
 	var tries= ["./"+kdbid+".kdb"
@@ -424,17 +420,10 @@ var setPath=function(path) {
 }
 
 var enumKdb=function(cb,context){
-	if (kdbs.length) return kdbs.map(function(k){return k[0]});
-
-	if (!kdblisted) {
-		require("./listkdb")(function(files){
-			kdbs=files;
-			cb.call(context, kdbs.map(function(k){return k[0]}) );
-		});
-		kdblisted=true;
-	}
+	require("./listkdb")(function(files){
+		kdbs=files;
+		cb.call(context, kdbs.map(function(k){return k[0]}) );
+	});
 }
-
-
 
 module.exports={open:openLocal,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch};
