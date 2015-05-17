@@ -80,9 +80,9 @@ var absSegToFileSeg=function(absoluteseg) {
 	var s=absoluteseg;
 	var file=0;
 	while (s>filesegcount[file]) {
-		s-=filesegcount[file];
 		file++;
 	}
+	s=Math.abs(filesegcount[file-1]-s);
 	return {file:file,seg:s};
 }
 
@@ -104,13 +104,14 @@ var fileSegToAbsSeg=function(file,seg) {
 //}
 
 //return array of object of nfile nseg given segname
-var findSeg=function(segname) {
+var findSeg=function(segname,max) {
 	var segnames=this.get("segnames");
 	var out=[];
 	for (var i=0;i<segnames.length;i++) {
 		if (segnames[i]==segname) {
 			var fileseg=absSegToFileSeg.apply(this,[i]);
 			out.push({file:fileseg.file,seg:fileseg.seg,absseg:i});
+			if (out.length>=max) break;
 		}
 	}
 	return out;
