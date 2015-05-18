@@ -3,6 +3,14 @@ var strsep="\uffff";
 var method=require("./method");
 
 var getRemote=function(path,opts,cb) {
+
+	if (typeof opts==="function") {
+		opts={};
+		cb=opts;
+	}
+
+	opts=opts||{};
+	
 	var $kde=require("./rpc_kde");
 
 	var engine=this;
