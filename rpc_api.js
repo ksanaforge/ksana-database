@@ -11,7 +11,6 @@ var get=function(opts,cb) {
 			return;
 		} else {
 			db.get(opts.key,{recursive:!!opts.recursive},function(data){
-				console.log(data.length);
 				cb(data);
 			})
 		}
