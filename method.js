@@ -1,3 +1,4 @@
+var bsearch=require("./bsearch");
 
 var gets=function(paths,opts,cb) { //get many data with one call
 
@@ -116,9 +117,32 @@ var fileSegToAbsSeg=function(file,seg) {
 //	segid-=range.start;
 //    return {file:fileid,seg:segid};
 //}
+var indexOfSorted_str = function (array, obj, near) { 
+  var low = 0,
+  high = array.length;
+  while (low < high) {
+    var mid = (low + high) >> 1;
+    if (array[mid]==obj) return mid;
+    (array[mid].localeCompare(obj)<0) ? low = mid + 1 : high = mid;
+  }
+  if (near) return low;
+  else if (array[low]==obj) return low;else return -1;
+};
+var searchSeg=function(segname,near) {
+	var i=bsearch(this.get("segnames"),segname,near);
+	if (i>-1) {
+		var fileseg=absSegToFileSeg.apply(this,[i]);
+		return {file:fileseg.file,seg:fileseg.seg,absseg:i};
+	}
+	return null;
+}
 
 //return array of object of nfile nseg given segname
 var findSeg=function(segname,max) {
+	meta=this.get("meta");
+	if (meta.sortedSegNames) {
+		return findSeg_sorted(segname);
+	}
 	var segnames=this.get("segnames");
 	var out=[];
 	for (var i=0;i<segnames.length;i++) {
@@ -225,6 +249,7 @@ var setup=function(engine) {
 	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
 	engine.findSeg=findSeg;
+	engine.searchSeg=searchSeg;
 	engine.findFile=findFile;
 	engine.absSegToFileSeg=absSegToFileSeg;
 	engine.fileSegToAbsSeg=fileSegToAbsSeg;
