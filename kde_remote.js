@@ -5,8 +5,8 @@ var method=require("./method");
 var getRemote=function(path,opts,cb) {
 
 	if (typeof opts==="function") {
-		opts={};
 		cb=opts;
+		opts={};
 	}
 
 	opts=opts||{};
@@ -51,7 +51,7 @@ var getRemote=function(path,opts,cb) {
 					output[i]=datum[i];
 				}
 			}
-			cb.apply(engine.context,[output]);	
+			if (cb) cb.apply(engine.context,[output]);	
 		});
 	} else { //single path
 		var cachepath=path.join(strsep);
