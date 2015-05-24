@@ -240,6 +240,7 @@ var folderOffset=function(folder) {
 	return {start:start,end:end};
 }
 var getTOCNames=function(cb,context) {
+	//need to have a new fields to record TOCs
 	var out=[];
 	engine.get(["fields"],{recursive:false},function(data){
 		if (data.mulu) out.push("mulu");
@@ -271,6 +272,7 @@ var getTOC=function(opts,cb,context) {
 	  }
 
 	  engine.TOC[tocname]=out;
+	  cb.call(context,out);
 	  return out; 		
 	});
 }
