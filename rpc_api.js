@@ -42,7 +42,7 @@ var version=function() {
 var list=function(opts,cb) {
 	var out=require("./listkdb").sync().map(function(k){
 		var relpath=k[1].match( /([^\/]+?\/[^\/]+?)\.kdb/)[1];
-		return [k[0],relpath];
+		return {shortname:k[0],folder:relpath.split("/")[0],fullname:relpath};
 	});
 	cb(out);
 	return out;

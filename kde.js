@@ -190,12 +190,12 @@ var enumKdb=function(cb,context){
 }
 
 var API={open:open,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch,
-kdbs:kdbs}
+kdbs:kdbs};
 
 var platform=require("./platform").getPlatform();
 if (platform=="node-webkit" || platform=="node") {
-	enumKdb();	
+	enumKdb();
 } else {
-	API.rpc=require("./rpc_kde");
+	API.rpc=require("./rpc_kde"); //for browser only
 }
 module.exports=API;
