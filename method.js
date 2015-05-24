@@ -268,7 +268,7 @@ var getTOC=function(opts,cb,context) {
 
 	  var out=[{d:0,t:rootname}];
 	  if (texts) for (var i=0;i<texts.length;i++) {
-	      out.push({t:texts[i],d:depths[i], voff:voffs[i]});
+	      out.push({t:texts[i],d:depths[i], vpos:voffs[i]});
 	  }
 
 	  engine.TOC[tocname]=out;
