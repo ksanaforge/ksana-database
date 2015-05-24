@@ -16,7 +16,7 @@ var kdblisted=false;
 var method=require("./method");
 
 var createLocalEngine=function(kdb,opts,cb,context) {
-	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}};
+	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{} };
 	if (typeof context=="object") engine.context=context;
 	method.setup(engine);
 	//speedy native functions
@@ -134,7 +134,6 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 		if (err) {
 			var remoteurl=window.location.origin+window.location.pathname+kdbid;
 			if (kdbid.indexOf("/")>-1) remoteurl=window.location.origin+'/'+kdbid;
-			console.log("open remote",remoteurl);
 			return kde_remote(remoteurl,opts,cb,context);
 			//cb.apply(context,[err]);
 		} else {

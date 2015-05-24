@@ -1,5 +1,4 @@
 var bsearch=require("./bsearch");
-
 var gets=function(paths,opts,cb) { //get many data with one call
 
 	if (!paths) return ;
@@ -240,6 +239,42 @@ var folderOffset=function(folder) {
 	}
 	return {start:start,end:end};
 }
+var getTOCNames=function(cb,context) {
+	var out=[];
+	engine.get(["fields"],{recursive:false},function(data){
+		if (data.mulu) out.push("mulu");
+			cb(out,context);
+	});
+}
+var getTOC=function(opts,cb,context) {
+	var engine=this;
+	opts=opts||{};
+	var tocname=opts.tocname;
+	var rootname=opts.rootname||opts.tocname;
+	if (!tocname) return;
+
+	var toc=engine.TOC[tocname];
+	if (toc) {
+		cb.call(context,toc);
+		return toc;
+	}
+
+	var keys=[["fields",tocname],["fields",tocname+"_depth"],["fields",tocname+"_voff"]];
+	engine.get(keys,{recursive:true},function(){
+	  var texts=engine.get(["fields",tocname]);
+	  var depths=engine.get(["fields",tocname+"_depth"]);
+	  var voffs=engine.get(["fields",tocname+"_voff"]);
+
+	  var out=[{d:0,t:rootname}];
+	  if (texts) for (var i=0;i<texts.length;i++) {
+	      out.push({t:texts[i],d:depths[i], voff:voffs[i]});
+	  }
+
+	  engine.TOC[tocname]=out;
+	  return out; 		
+	});
+}
+
 var setup=function(engine) {
 	engine.get=localengine_get;
 	engine.segOffset=segOffset;
@@ -256,6 +291,8 @@ var setup=function(engine) {
 	engine.fileSegFromVpos=fileSegFromVpos;
 	engine.absSegFromVpos=absSegFromVpos;
 	engine.fileSegToVpos=fileSegToVpos;
+	engine.getTOC=getTOC;
+	engine.getTOCNames=getTOCNames;
 }
 
 module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};

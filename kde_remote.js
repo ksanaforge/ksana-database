@@ -48,7 +48,7 @@ var getRemote=function(path,opts,cb) {
 			for (var i=0;i<output.length;i++) {
 				if (datum[i] && paths[i]) {
 					var cachekey=paths[i].join(strsep);
-					engine.cache[cachepath]=datum[i];
+					engine.cache[cachekey]=datum[i];
 					output[i]=datum[i];
 				}
 			}
@@ -74,7 +74,7 @@ var getRemote=function(path,opts,cb) {
 
 var createRemoteEngine=function(kdb,opts,cb,context) {
 
-	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}};
+	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{}, fetched:0, traffic:0};
 	if (typeof context=="object") engine.context=context;
 	method.setup(engine);
 	engine.get=getRemote;
@@ -105,6 +105,7 @@ var openRemote=function(kdbid,opts,cb,context) {
 		if (cb) cb.apply(context||engine.context,[0,engine]);
 		return engine;
 	}
+	console.log("open remote",kdbid);
 
 	createRemoteEngine(kdbid,opts,function(engine){
 		pool[kdbid]=engine;
