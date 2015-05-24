@@ -2,6 +2,7 @@ var pool={};
 var strsep="\uffff";
 var method=require("./method");
 
+
 var getRemote=function(path,opts,cb) {
 
 	if (typeof opts==="function") {
@@ -15,7 +16,7 @@ var getRemote=function(path,opts,cb) {
 
 	var engine=this;
 	var kdbid=engine.kdb;
-	kdbid=kdbid.substr(window.location.origin.length+1).replace(".kdb","");
+	kdbid=kdbid.substr(window.location.origin.length+1).replace(".kdb","");	
 
 	if (typeof opts=="function") {
 		cb=opts;

@@ -4,7 +4,11 @@ var getPlatform=function() {
 			require("react-native");
 			platform="react-native";
 		} catch (e) {
-			platform="node";	
+			if (typeof process=="undefined") {
+				platform="chrome";
+			} else {
+				platform="node";		
+			}
 		}
 	} else {
 		platform=ksanagap.platform;

@@ -6,28 +6,46 @@ var listkdb_html5=function(cb,context) {
 			cb.call(this,kdbs);
 	},context||this);		
 }
-
-var listkdb_node=function(cb,context){
+var listkdb_rpc=function() {
 	var fs=require("fs");
-	var path=require("path")
-	var parent=path.resolve(process.cwd(),"..");
-	var files=fs.readdirSync(parent);
+	var path=require("path");
+	var dir=process.cwd();
+	var files=fs.readdirSync(dir);
+	var output=filterkdb(files,dir);
+	return output;
+}
+var filterkdb=function(files,parent){
 	var output=[];
+	var fs=require("fs");
+	var path=require("path");
 	files.map(function(f){
 		var subdir=parent+path.sep+f;
-		var stat=fs.statSync(subdir );
+		var stat=fs.statSync(subdir);
 		if (stat.isDirectory()) {
 			var subfiles=fs.readdirSync(subdir);
 			for (var i=0;i<subfiles.length;i++) {
 				var file=subfiles[i];
 				var idx=file.indexOf(".kdb");
 				if (idx>-1&&idx==file.length-4) {
-					output.push([ file.substr(0,file.length-4), subdir+path.sep+file]);
+					var fn=subdir+path.sep+file;
+					fn=fn.replace(/\\/g,"/");
+					output.push([ file.substr(0,file.length-4), fn]);
 				}
 			}
 		}
-	})
-	cb.call(context,output);
+	});
+	return output;
+}	
+
+var listkdb_node=function(cb,context){
+	var fs=require("fs");
+	var path=require("path")
+	var parent=path.resolve(process.cwd(),"..");
+	var files=fs.readdirSync(parent);
+	var output=filterkdb(files,parent);
+
+	if (cb) cb.call(context,output);
+	return output;
 }
 var fileNameOnly=function(fn) {
 	var at=fn.lastIndexOf("/");
@@ -58,10 +76,8 @@ var listkdb_ksanagap=function(cb,context) {
 	}
 }
 var listkdb=function(cb,context) {
-
 	var platform=require("./platform").getPlatform();
 	var files=[];
-
 	if (platform=="node" || platform=="node-webkit") {
 		listkdb_node(cb,context);
 	} else if (platform=="chrome") {
@@ -70,4 +86,6 @@ var listkdb=function(cb,context) {
 		listkdb_ksanagap(cb,context);
 	}
 }
+
+listkdb.sync=listkdb_rpc;
 module.exports=listkdb;

@@ -106,7 +106,6 @@ var openLocalKsanagap=function(kdbid,opts,cb,context) {
 var openLocalNode=function(kdbid,opts,cb,context) {
 	var fs=require('fs');
 	var tries=getLocalTries(kdbid);
-
 	for (var i=0;i<tries.length;i++) {
 		if (fs.existsSync(tries[i])) {
 
@@ -115,8 +114,8 @@ var openLocalNode=function(kdbid,opts,cb,context) {
 					cb.apply(context||engine.content,[err]);
 				} else {
 					createLocalEngine(kdb,opts,function(engine){
-							localPool[kdbid]=engine;
-							cb.apply(context||engine.context,[0,engine]);
+						localPool[kdbid]=engine;
+						cb.apply(context||engine.context,[0,engine]);
 					},context);
 				}
 			});
@@ -133,7 +132,11 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 	if (kdbfn.indexOf(".kdb")==-1) kdbfn+=".kdb";
 	new Kdb.open(kdbfn,function(err,handle){
 		if (err) {
-			cb.apply(context,[err]);
+			var remoteurl=window.location.origin+window.location.pathname+kdbid;
+			if (kdbid.indexOf("/")>-1) remoteurl=window.location.origin+'/'+kdbid;
+			console.log("open remote",remoteurl);
+			return kde_remote(remoteurl,opts,cb,context);
+			//cb.apply(context,[err]);
 		} else {
 			createLocalEngine(handle,opts,function(engine){
 				localPool[kdbid]=engine;
@@ -182,8 +185,17 @@ var setPath=function(path) {
 var enumKdb=function(cb,context){
 	require("./listkdb")(function(files){
 		kdbs=files;
-		cb.call(context, kdbs.map(function(k){return k[0]}) );
+		if (cb) cb.call(context, kdbs.map(function(k){return k[0]}) );
 	});
 }
 
-module.exports={open:open,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch};
+var API={open:open,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch,
+kdbs:kdbs}
+
+var platform=require("./platform").getPlatform();
+if (platform=="node-webkit" || platform=="node") {
+	enumKdb();	
+} else {
+	API.rpc=require("./rpc_kde");
+}
+module.exports=API;
