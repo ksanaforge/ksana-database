@@ -239,13 +239,8 @@ var folderOffset=function(folder) {
 	}
 	return {start:start,end:end};
 }
-var getTOCNames=function(cb,context) {
-	//need to have a new fields to record TOCs
-	var out=[];
-	engine.get(["fields"],{recursive:false},function(data){
-		if (data.mulu) out.push("mulu");
-			cb(out,context);
-	});
+var getTOCNames=function() {
+	return engine.get("meta").tocs;
 }
 var getTOC=function(opts,cb,context) {
 	var engine=this;
