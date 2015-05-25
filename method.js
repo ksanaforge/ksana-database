@@ -260,11 +260,11 @@ var getTOC=function(opts,cb,context) {
 		return toc;
 	}
 
-	var keys=[["fields",tocname],["fields",tocname+"_depth"],["fields",tocname+"_voff"]];
+	var keys=[["fields",tocname],["fields",tocname+"_depth"],["fields",tocname+"_vpos"]];
 	engine.get(keys,{recursive:true},function(){
 	  var texts=engine.get(["fields",tocname]);
 	  var depths=engine.get(["fields",tocname+"_depth"]);
-	  var voffs=engine.get(["fields",tocname+"_voff"]);
+	  var voffs=engine.get(["fields",tocname+"_vpos"]);
 
 	  var out=[{d:0,t:rootname}];
 	  if (texts) for (var i=0;i<texts.length;i++) {
