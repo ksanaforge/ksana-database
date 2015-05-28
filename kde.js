@@ -192,9 +192,9 @@ var API={open:open,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:b
 kdbs:kdbs};
 
 var platform=require("./platform").getPlatform();
-if (platform=="node-webkit" || platform=="node") {
+if (platform=="node-webkit" || platform=="node" || platform=="react-native") {
 	enumKdb();
-} else {
+} else if (typeof io!=="undefined") {
 	API.rpc=require("./rpc_kde"); //for browser only
 }
 module.exports=API;
