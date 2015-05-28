@@ -242,6 +242,27 @@ var folderOffset=function(folder) {
 var getTOCNames=function() {
 	return engine.get("meta").tocs;
 }
+var buildToc = function(toc) {
+	if (!toc || !toc.length || toc.built) return;
+	var depths=[];
+ 	var prev=0;
+ 	if (toc.length>1) {
+ 		toc[0].o=true;//opened
+ 	}
+ 	for (var i=0;i<toc.length;i++) delete toc[i].n;
+	for (var i=0;i<toc.length;i++) {
+	    var depth=toc[i].d||toc[i].depth;
+	    if (prev>depth) { //link to prev sibling
+	      if (depths[depth]) toc[depths[depth]].n = i;
+	      for (var j=depth;j<prev;j++) depths[j]=0;
+	    }
+    	depths[depth]=i;
+    	prev=depth;
+	}
+	toc.built=true;
+	return toc;
+}
+
 var getTOC=function(opts,cb,context) {
 	var engine=this;
 	opts=opts||{};
@@ -267,6 +288,7 @@ var getTOC=function(opts,cb,context) {
 	  }
 
 	  engine.TOC[tocname]=out;
+	  out=buildToc(out);
 	  cb.call(context,out);
 	  return out; 		
 	});
