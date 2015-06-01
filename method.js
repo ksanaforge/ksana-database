@@ -328,23 +328,13 @@ var getRange=function(start,end,cb){
 	//console.log(start,end,startvpos,lastvpos);
 	var combinetext=function(text,idx,texts) {
 		var out=text;
-		if (idx==0) {
+		if (idx==0 || idx===texts.length-1) {
 			var tokenized=this.analyzer.tokenize(text);
 			var now=0;
 			out=tokenized.tokens.map(function(t){
 				if (!this.analyzer.isSkip(t))now++;
-				if (now<startvpos) return "";
-				else return t;
-			}.bind(this)).join("");
-		}
-		if (idx===texts.length-1) {
-			var tokenized=this.analyzer.tokenize(text);
-			var now=0;
-			out=tokenized.tokens.map(function(t){
-				if (!this.analyzer.isSkip(t)){
-					now++;
-				}
-				if (now>lastvpos) return "";
+				if (now<startvpos && idx===0) return "";
+				else if (now>lastvpos && idx===texts.length-1) return "";
 				else return t;
 			}.bind(this)).join("");
 		}
