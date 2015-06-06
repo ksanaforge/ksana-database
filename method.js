@@ -298,56 +298,7 @@ var getTOC=function(opts,cb,context) {
 	  return out; 		
 	});
 }
-var loadAnalyzer=function() {
-	if(this.analyzer)return;
-	var analyzer=require("ksana-analyzer");
-	var config=this.get("meta").config;
-	this.analyzer=analyzer.getAPI(config);
-}
 
-var getRange=function(start,end,cb){
-	var fseg=this.fileSegFromVpos(start);
-	var fseg_end=this.fileSegFromVpos(end);
-	var keys=[];
-	loadAnalyzer.call(this);
-	for (var f=fseg.file;f<fseg_end.file+1;f++){
-		var range=this.getFileRange(f);
-
-		var from=0, to=range.end-range.start;
-		if (f===fseg.file) from=fseg.seg;
-		if (f===fseg_end.file) to=fseg_end.seg;
-		
-		for (var s=from;s<to+1;s++){
-			keys.push(["filecontents",f,s]);
-		}
-	}
-	var startsegvpos=fileSegToVpos.call(this,fseg.file,fseg.seg);
-	var endsegvpos=fileSegToVpos.call(this,fseg_end.file,fseg_end.seg);
-	var startvpos=start-startsegvpos;
-	var lastvpos=end-endsegvpos;
-	//console.log(start,end,startvpos,lastvpos);
-	var combinetext=function(text,idx,texts) {
-		var out=text;
-		if (idx==0 || idx===texts.length-1) {
-			var tokenized=this.analyzer.tokenize(text);
-			var now=0;
-			out=tokenized.tokens.map(function(t){
-				if (!this.analyzer.isSkip(t))now++;
-				if (now<startvpos && idx===0) return "";
-				else if (now>lastvpos && idx===texts.length-1) return "";
-				else return t;
-			}.bind(this)).join("");
-		}
-		return out;
-	}
-	this.get(keys,function(data){
-		cb(data.map(combinetext.bind(this)).join(""));
-	})
-}
-
-var getTextByTag=function(tag,cb){
-
-}
 
 var setup=function(engine) {
 	engine.get=localengine_get;
@@ -367,8 +318,7 @@ var setup=function(engine) {
 	engine.fileSegToVpos=fileSegToVpos;
 	engine.getTOC=getTOC;
 	engine.getTOCNames=getTOCNames;
-	engine.getRange=getRange;
-	engine.getTextByTag=getTextByTag;
+
 }
 
 module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};
