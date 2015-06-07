@@ -189,7 +189,7 @@ var fileSegFromVpos=function(vpos) {
 var fileSegToVpos=function(f,s) {
 	var segoffsets=this.get(["segoffsets"]);
 	var seg=fileSegToAbsSeg.call(this,f,s);
-	return segoffsets[seg-1];
+	return segoffsets[seg-1]||0;
 }
 
 var getFileSegNames=function(i) {
