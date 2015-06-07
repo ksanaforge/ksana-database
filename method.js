@@ -299,6 +299,21 @@ var getTOC=function(opts,cb,context) {
 	});
 }
 
+var nextSeg=function(segid) {
+	var segnames=this.get(["segnames"]);
+	var i=segnames.indexOf(segid);
+	if (i>-1 && i<segnames.length) {
+		return segnames[i+1];
+	} else return segid;
+}
+var prevSeg=function(segid) {
+	var segnames=this.get(["segnames"]);
+	var i=segnames.indexOf(segid);
+	if (i>0) {
+		return segnames[i-1];
+	} else return segid;
+}
+
 
 var setup=function(engine) {
 	engine.get=localengine_get;
@@ -318,7 +333,8 @@ var setup=function(engine) {
 	engine.fileSegToVpos=fileSegToVpos;
 	engine.getTOC=getTOC;
 	engine.getTOCNames=getTOCNames;
-
+	engine.nextSeg=nextSeg;
+	engine.prevSeg=prevSeg;
 }
 
 module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};
