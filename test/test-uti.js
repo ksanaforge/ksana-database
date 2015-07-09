@@ -10,19 +10,20 @@ describe("test uti",function(){
 			done();
 		})
 	})
-	it("uti 2 vpos",function(){
-		vpos1=db.uti2vpos("a");
-		vpos2=db.uti2vpos("b");
-		vpos3=db.uti2vpos("c");
-		vpos4=db.uti2vpos("d");
+	it("txtid 2 vpos",function(){
+		vpos1=db.txtid2vpos("a");
+		vpos2=db.txtid2vpos("b");
+		vpos3=db.txtid2vpos("c");
+		vpos4=db.txtid2vpos("d");
+		console.log(vpos1,vpos2,vpos3,vpos4)
 		assert(vpos1>vpos4&&vpos2<vpos3&&vpos3<vpos4,true);
 	});
 
-	it("vpos 2 uti",function(){
-		uti1=db.vpos2uti(vpos1);
-		uti2=db.vpos2uti(vpos2);
-		uti3=db.vpos2uti(vpos3);
-		uti4=db.vpos2uti(vpos4);
+	it("vpos 2 txtid",function(){
+		uti1=db.vpos2txtid(vpos1);
+		uti2=db.vpos2txtid(vpos2);
+		uti3=db.vpos2txtid(vpos3);
+		uti4=db.vpos2txtid(vpos4);
 		assert(uti1,"a");
 		assert(uti2,"b");
 		assert(uti3,"c");
