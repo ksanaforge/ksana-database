@@ -191,7 +191,10 @@ var fileSegToVpos=function(f,s) {
 	var seg=fileSegToAbsSeg.call(this,f,s);
 	return segoffsets[seg-1]||0;
 }
-
+var absSegToVpos=function(seg) {
+	var segoffsets=this.get("segoffsets");
+	return segoffsets[seg]||0;	
+}
 var getFileSegNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	var segnames=this.get("segnames");
@@ -199,7 +202,8 @@ var getFileSegNames=function(i) {
 }
 
 var getPreloadField=function(user) {
-	var preload=[["meta"],["filenames"],["fileoffsets"],["segnames"],["segoffsets"],["filesegcount"]];
+	var preload=[["meta"],["filenames"],["fileoffsets"],["segnames"],
+	["segoffsets"],["filesegcount"],["uti"],["uti_idx"],["uti_invert"]];
 	//["tokens"],["postingslen"] kse will load it
 	if (user && user.length) { //user supply preload
 		for (var i=0;i<user.length;i++) {
@@ -313,7 +317,18 @@ var prevSeg=function(segid) {
 		return segnames[i-1];
 	} else return segid;
 }
-
+var vpos2uti=function(vpos){
+	var absseg=this.absSegFromVpos(vpos);
+	var s=this.get("uti_invert")[absseg];
+	return this.get("uti")[s];
+}
+var uti2vpos=function(uti) {
+	var uti_idx=this.get("uti_idx");
+	var start=bsearch(this.get("uti"),uti);
+	if (start<0) return 0;
+	var absseg=uti_idx[start];
+	return this.absSegToVpos(absseg-1);
+}
 
 var setup=function(engine) {
 	engine.get=localengine_get;
@@ -330,11 +345,14 @@ var setup=function(engine) {
 	engine.fileSegToAbsSeg=fileSegToAbsSeg;
 	engine.fileSegFromVpos=fileSegFromVpos;
 	engine.absSegFromVpos=absSegFromVpos;
+	engine.absSegToVpos=absSegToVpos;
 	engine.fileSegToVpos=fileSegToVpos;
 	engine.getTOC=getTOC;
 	engine.getTOCNames=getTOCNames;
 	engine.nextSeg=nextSeg;
 	engine.prevSeg=prevSeg;
+	engine.uti2vpos=uti2vpos;
+	engine.vpos2uti=vpos2uti;
 }
 
 module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};
