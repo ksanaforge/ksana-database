@@ -271,13 +271,39 @@ var buildToc = function(toc) {
 	toc.built=true;
 	return toc;
 }
+var getDefaultTOC=function(opts,cb,context) {
+	var toc=this.TOC["_"];
+	if (toc) {
+		cb.call(context,toc);
+		return toc;
+	}
 
+	var out=[{t:"root",d:0,vpos:1}];
+	var fileoffsets=this.get("fileoffsets");
+	var segoffsets=this.get("segoffsets");
+	var segnames=this.get("segnames");
+	var filenames=this.get("filenames");
+	var depth=1;
+	//TODO , convert file folder structure to depth
+	for (var i=0;i<filenames.length;i++){
+		var fn=filenames[i];
+		fn=fn.substr(0,fn.lastIndexOf("."));
+		out.push({t:fn,d:depth, vpos:fileoffsets[i]});
+		var range=getFileRange.apply(this,[i]);
+		for (var j=range.start;j<range.end;j++) {
+			out.push({t:segnames[j],d:depth+1, vpos:segoffsets[j]});
+		}
+	}
+	this.TOC["_"]=out;
+  cb.call(context,out);
+	return out;		
+}
 var getTOC=function(opts,cb,context) {
 	var engine=this;
 	opts=opts||{};
 	var tocname=opts.tocname;
 	var rootname=opts.rootname||opts.tocname;
-	if (!tocname) return;
+	if (!tocname) return getDefaultTOC.call(this,opts,cb,context);
 
 	var toc=engine.TOC[tocname];
 	if (toc) {
@@ -317,6 +343,13 @@ var prevSeg=function(segid) {
 		return segnames[i-1];
 	} else return segid;
 }
+var txtid2fileSeg=function(txtid) {
+	var txtid_idx=this.get("txtid_idx");
+	var start=bsearch(this.get("txtid"),txtid);
+	if (start<0) return 0;
+	var absseg=txtid_idx[start];
+	return absSegToFileSeg.call(this,absseg);
+}
 var vpos2txtid=function(vpos){
 	var absseg=this.absSegFromVpos(vpos);
 	var s=this.get("txtid_invert")[absseg];
@@ -353,6 +386,7 @@ var setup=function(engine) {
 	engine.prevSeg=prevSeg;
 	engine.txtid2vpos=txtid2vpos;
 	engine.vpos2txtid=vpos2txtid;
+	engine.txtid2fileSeg=txtid2fileSeg;
 }
 
 module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};
