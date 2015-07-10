@@ -64,6 +64,7 @@ var getFileRange=function(i) {
 	var engine=this;
 
 	var filesegcount=engine.get(["filesegcount"]);
+
 	if (filesegcount) {
 		if (i==0) {
 			return {start:0,end:filesegcount[0]-1};
@@ -169,11 +170,7 @@ var findFile=function(filename) {
 var getFileSegOffsets=function(i) {
 	var segoffsets=this.get("segoffsets");
 	var range=getFileRange.apply(this,[i]);
-	if (segoffsets.subarray) {
-		return segoffsets.subarray(range.start,range.end+1);
-	} else {
-		return segoffsets.slice(range.start,range.end+1);	
-	}
+	return segoffsets.slice(range.start,range.end+1);	
 }
 var absSegFromVpos=function(vpos) { 
 	var segoffsets=this.get(["segoffsets"]);
@@ -290,7 +287,7 @@ var getDefaultTOC=function(opts,cb,context) {
 		fn=fn.substr(0,fn.lastIndexOf("."));
 		out.push({t:fn,d:depth, vpos:fileoffsets[i]});
 		var range=getFileRange.apply(this,[i]);
-		for (var j=range.start;j<range.end;j++) {
+		for (var j=range.start;j<range.end+1;j++) {
 			out.push({t:segnames[j],d:depth+1, vpos:segoffsets[j-1]||1});
 		}
 	}
@@ -355,6 +352,17 @@ var vpos2txtid=function(vpos){
 	var s=this.get("txtid_invert")[absseg];
 	return this.get("txtid")[s];
 }
+var nextTxtid=function(txtid) {
+	var txtid_idx=this.get("txtid_idx");
+	var start=bsearch(this.get("txtid"),txtid);
+	if (start==-1) return null;
+	var absseg=txtid_idx[start];
+	newvpos=absSegToVpos.call(this,absseg);
+	return vpos2txtid.call(this,newvpos);
+}
+var prevTxtid=function(txtid) {
+	
+}
 var txtid2vpos=function(txtid) {
 	var txtid_idx=this.get("txtid_idx");
 	var start=bsearch(this.get("txtid"),txtid);
@@ -362,7 +370,6 @@ var txtid2vpos=function(txtid) {
 	var absseg=txtid_idx[start];
 	return this.absSegToVpos(absseg-1);
 }
-
 var setup=function(engine) {
 	engine.get=localengine_get;
 	engine.segOffset=segOffset;
@@ -387,6 +394,8 @@ var setup=function(engine) {
 	engine.txtid2vpos=txtid2vpos;
 	engine.vpos2txtid=vpos2txtid;
 	engine.txtid2fileSeg=txtid2fileSeg;
+	engine.nextTxtid=nextTxtid;
+	engine.prevTxtid=prevTxtid;
 }
 
 module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};
