@@ -291,7 +291,7 @@ var getDefaultTOC=function(opts,cb,context) {
 		out.push({t:fn,d:depth, vpos:fileoffsets[i]});
 		var range=getFileRange.apply(this,[i]);
 		for (var j=range.start;j<range.end;j++) {
-			out.push({t:segnames[j],d:depth+1, vpos:segoffsets[j]});
+			out.push({t:segnames[j],d:depth+1, vpos:segoffsets[j-1]||1});
 		}
 	}
 	this.TOC["_"]=out;
@@ -315,11 +315,11 @@ var getTOC=function(opts,cb,context) {
 	engine.get(keys,{recursive:true},function(){
 	  var texts=engine.get(["fields",tocname]);
 	  var depths=engine.get(["fields",tocname+"_depth"]);
-	  var voffs=engine.get(["fields",tocname+"_vpos"]);
+	  var vpos=engine.get(["fields",tocname+"_vpos"]);
 
 	  var out=[{d:0,t:rootname}];
 	  if (texts) for (var i=0;i<texts.length;i++) {
-	      out.push({t:texts[i],d:depths[i], vpos:voffs[i]});
+	    out.push({t:texts[i],d:depths[i], vpos:vpos[i]});
 	  }
 
 	  engine.TOC[tocname]=out;
