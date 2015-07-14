@@ -83,6 +83,7 @@ var createRemoteEngine=function(kdb,opts,cb,context) {
 		engine.dbname=res[0].name;
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
+		method.hotfix_segoffset_before20150710(engine);
 	}
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};

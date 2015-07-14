@@ -397,5 +397,12 @@ var setup=function(engine) {
 	engine.nextTxtid=nextTxtid;
 	engine.prevTxtid=prevTxtid;
 }
-
-module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};
+var hotfix_segoffset_before20150710=function(engine) {
+	var so=engine.get("segoffsets");
+	if (so.length>2 && so[so.length-1]===so[so.length-2]) {
+		so.unshift(1);
+		so.pop();
+		console.log("old segoffsets, better rebuild your kdb")
+	}
+}
+module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets,hotfix_segoffset_before20150710:hotfix_segoffset_before20150710};

@@ -15,6 +15,7 @@ var kdblisted=false;
 
 var method=require("./method");
 
+
 var createLocalEngine=function(kdb,opts,cb,context) {
 	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{} };
 	if (typeof context=="object") engine.context=context;
@@ -27,6 +28,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		engine.dbname=res[0].name;
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
+		method.hotfix_segoffset_before20150710(engine);
 	}
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
@@ -36,7 +38,6 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	}]);
 	return engine;
 }
-
 
  //TODO delete directly from kdb instance
  //kdb.free();
