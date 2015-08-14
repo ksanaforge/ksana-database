@@ -355,13 +355,18 @@ var vpos2txtid=function(vpos){
 var nextTxtid=function(txtid) {
 	var txtid_idx=this.get("txtid_idx");
 	var start=bsearch(this.get("txtid"),txtid);
-	if (start==-1) return null;
+	if (start===-1 || start===txtid_idx.length-1) return null;
 	var absseg=txtid_idx[start];
-	newvpos=absSegToVpos.call(this,absseg);
+	var newvpos=absSegToVpos.call(this,absseg);
 	return vpos2txtid.call(this,newvpos);
 }
 var prevTxtid=function(txtid) {
-	
+	var txtid_idx=this.get("txtid_idx");
+	var start=bsearch(this.get("txtid"),txtid);
+	if (start===-1 || txtid_idx[start]<2) return null;
+	var absseg=txtid_idx[start]-2;
+	var newvpos=absSegToVpos.call(this,absseg);
+	return vpos2txtid.call(this,newvpos);
 }
 var txtid2vpos=function(txtid) {
 	var txtid_idx=this.get("txtid_idx");
