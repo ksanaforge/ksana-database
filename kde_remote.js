@@ -1,7 +1,7 @@
 var pool={};
 var strsep="\uffff";
 var method=require("./method");
-
+var verbose=false;
 
 var getRemote=function(path,opts,cb) {
 
@@ -84,11 +84,14 @@ var createRemoteEngine=function(kdb,opts,cb,context) {
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
 		method.hotfix_segoffset_before20150710(engine);
+		method.buildSegnameIndex(engine);
 	}
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
+	if (verbose) console.time("preload Remote");
 	method.gets.apply(engine,[ preload, opts,function(res){
 		setPreload(res);
+		if (verbose) console.timeEnd("preload Remote");
 		cb.apply(engine.context,[engine]);
 	}]);
 	return engine;
@@ -106,7 +109,7 @@ var openRemote=function(kdbid,opts,cb,context) {
 		if (cb) cb.apply(context||engine.context,[0,engine]);
 		return engine;
 	}
-	console.log("open remote",kdbid);
+	if (verbose) console.log("open remote",kdbid);
 
 	createRemoteEngine(kdbid,opts,function(engine){
 		pool[kdbid]=engine;

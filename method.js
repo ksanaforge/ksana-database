@@ -200,8 +200,11 @@ var getFileSegNames=function(i) {
 
 var getPreloadField=function(user) {
 	var preload=[["meta"],["filenames"],["fileoffsets"],["segnames"],
-	["segoffsets"],["filesegcount"],["txtid"],["txtid_idx"],["txtid_invert"]];
+	["segoffsets"],["filesegcount"]];
+
+	//,["txtid"],["txtid_idx"],["txtid_invert"]];
 	//["tokens"],["postingslen"] kse will load it
+
 	if (user && user.length) { //user supply preload
 		for (var i=0;i<user.length;i++) {
 			if (preload.indexOf(user[i])==-1) {
@@ -340,40 +343,44 @@ var prevSeg=function(segid) {
 		return segnames[i-1];
 	} else return segid;
 }
-var txtid2fileSeg=function(txtid) {
-	var txtid_idx=this.get("txtid_idx");
-	var start=bsearch(this.get("txtid"),txtid);
-	if (start<0) return 0;
-	var absseg=txtid_idx[start];
-	return absSegToFileSeg.call(this,absseg);
+//return file seg of first txtid
+
+var txt2absseg=function(txtid) {
+	var absseg=this.txtid[txtid];
+	if (!absseg) return null;
+	if (typeof absseg[0]==="number") absseg=absseg[0];
+	return absseg;
 }
+var txtid2fileSeg=function(txtid) {
+	var absseg=txt2absseg.call(this,txtid);
+	if (!absseg) return;
+	return absSegToFileSeg.call(this,absseg-1);
+}
+
 var vpos2txtid=function(vpos){
 	var absseg=this.absSegFromVpos(vpos);
-	var s=this.get("txtid_invert")[absseg];
-	return this.get("txtid")[s];
+	var segnames=this.get("segnames");
+	return segnames[absseg];
 }
+
 var nextTxtid=function(txtid) {
-	var txtid_idx=this.get("txtid_idx");
-	var start=bsearch(this.get("txtid"),txtid);
-	if (start===-1 || start===txtid_idx.length-1) return null;
-	var absseg=txtid_idx[start];
-	var newvpos=absSegToVpos.call(this,absseg);
-	return vpos2txtid.call(this,newvpos);
+	var absseg=txt2absseg.call(this,txtid);
+	if (!absseg) return;
+	var segnames=this.get("segnames");
+	return segnames[absseg];
 }
 var prevTxtid=function(txtid) {
-	var txtid_idx=this.get("txtid_idx");
-	var start=bsearch(this.get("txtid"),txtid);
-	if (start===-1 || txtid_idx[start]<2) return null;
-	var absseg=txtid_idx[start]-2;
-	var newvpos=absSegToVpos.call(this,absseg);
-	return vpos2txtid.call(this,newvpos);
+	var absseg=txt2absseg.call(this,txtid);
+	if (!absseg) return;
+	var segnames=this.get("segnames");
+	return segnames[absseg-2];
 }
 var txtid2vpos=function(txtid) {
-	var txtid_idx=this.get("txtid_idx");
-	var start=bsearch(this.get("txtid"),txtid);
-	if (start<0) return 0;
-	var absseg=txtid_idx[start];
-	return this.absSegToVpos(absseg-1);
+	var absseg=txt2absseg.call(this,txtid);
+	if (!absseg) return;
+	var segoffsets=this.get("segoffsets");
+	return segoffsets[absseg-1];
+
 }
 var setup=function(engine) {
 	engine.get=localengine_get;
@@ -410,4 +417,16 @@ var hotfix_segoffset_before20150710=function(engine) {
 		console.log("old segoffsets, better rebuild your kdb")
 	}
 }
-module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets,hotfix_segoffset_before20150710:hotfix_segoffset_before20150710};
+var buildSegnameIndex=function(engine){
+	/* replace txtid,txtid_idx, txtid_invert , save 400ms load time */
+	var segnames=engine.get("segnames");
+	var segindex={};
+	for (var i=1;i<=segnames.length;i++) {
+		var segname=segnames[i-1];
+		segindex[segname]=i; //assuming unique segname
+	}
+	engine.txtid=segindex;
+}
+module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets
+	,hotfix_segoffset_before20150710:hotfix_segoffset_before20150710
+	,buildSegnameIndex:buildSegnameIndex};

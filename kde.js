@@ -29,6 +29,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
 		method.hotfix_segoffset_before20150710(engine);
+		method.buildSegnameIndex(engine);
 	}
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
