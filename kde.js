@@ -127,6 +127,22 @@ var openLocalNode=function(kdbid,opts,cb,context) {
 	if (cb) cb.apply(context,[kdbid+" not found"]);
 	return null;
 }
+var openLocalFile=function(file,opts,cb,context) {	
+    var kdbid=file.name.substr(0,file.name.length-4);
+
+		var engine=localPool[kdbid];
+		if (engine) {
+			cb(0,engine);
+			return;
+		}
+
+		new Kdb.open(file,function(err,handle){
+			createLocalEngine(handle,opts,function(engine){
+				localPool[kdbid]=engine;
+				cb.apply(context||engine.context,[0,engine]);
+			},context);
+		});
+}
 
 var openLocalHtml5=function(kdbid,opts,cb,context) {	
 	var engine=localPool[kdbid];
@@ -148,17 +164,20 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 }
 
 var kde_remote=require("./kde_remote");
-
 //omit cb for syncronize open
 var open=function(kdbid,opts,cb,context)  {
-	if (kdbid.indexOf("http")==0) {
-		return kde_remote(kdbid,opts,cb,context);
-	}
-
 	if (typeof opts=="function") { //no opts
 		if (typeof cb=="object") context=cb;
 		cb=opts;
 		opts={};
+	}
+
+	if (typeof File!=="undefined" && kdbid.constructor===File) {
+		return openLocalFile(kdbid,opts,cb,context);
+	}
+
+	if (kdbid.indexOf("http")==0) {
+		return kde_remote(kdbid,opts,cb,context);
 	}
 	
 	var engine=localPool[kdbid];
