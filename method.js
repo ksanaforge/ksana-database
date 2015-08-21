@@ -360,7 +360,7 @@ var txtid2fileSeg=function(txtid) {
 var vpos2txtid=function(vpos){
 	var absseg=this.absSegFromVpos(vpos);
 	var segnames=this.get("segnames");
-	return segnames[absseg];
+	return segnames[absseg-1];
 }
 
 var nextTxtid=function(txtid) {
