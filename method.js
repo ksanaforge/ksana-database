@@ -94,7 +94,7 @@ var absSegToFileSeg=function(absoluteseg) {
 	var filesegcount=this.get("filesegcount");
 	var s=absoluteseg;
 	var file=0;
-	while (s>filesegcount[file]) {
+	while (s>=filesegcount[file]) {
 		file++;
 	}
 	if (file) {
