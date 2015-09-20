@@ -1,4 +1,5 @@
 var bsearch=require("./bsearch");
+var verbose=false;
 var gets=function(paths,opts,cb) { //get many data with one call
 
 	if (!paths) return ;
@@ -175,7 +176,9 @@ var getFileSegOffsets=function(i) {
 var absSegFromVpos=function(vpos) { 
 	var segoffsets=this.get(["segoffsets"]);
 	var i=bsearch(segoffsets,vpos,true);
-	while (segoffsets[i]==vpos) i++;
+	if (segoffsets[i]>vpos && segoffsets[i-1]<vpos) {
+		return i-1;
+	}
 	return i;
 }
 
@@ -354,13 +357,13 @@ var txt2absseg=function(txtid) {
 var txtid2fileSeg=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
 	if (!absseg) return;
-	return absSegToFileSeg.call(this,absseg-1);
+	return absSegToFileSeg.call(this,absseg);
 }
 
 var vpos2txtid=function(vpos){
 	var absseg=this.absSegFromVpos(vpos);
 	var segnames=this.get("segnames");
-	return segnames[absseg-1];
+	return segnames[absseg];
 }
 
 var nextTxtid=function(txtid) {
@@ -379,7 +382,7 @@ var txtid2vpos=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
 	if (!absseg) return;
 	var segoffsets=this.get("segoffsets");
-	return segoffsets[absseg-1];
+	return segoffsets[absseg];
 
 }
 var setup=function(engine) {
@@ -411,6 +414,8 @@ var setup=function(engine) {
 }
 var hotfix_segoffset_before20150710=function(engine) {
 	var so=engine.get("segoffsets");
+	if (!so) so=engine.get("segOffsets");
+	if (!so) return;
 	if (so.length>2 && so[so.length-1]===so[so.length-2]) {
 		so.unshift(1);
 		so.pop();
@@ -420,11 +425,17 @@ var hotfix_segoffset_before20150710=function(engine) {
 var buildSegnameIndex=function(engine){
 	/* replace txtid,txtid_idx, txtid_invert , save 400ms load time */
 	var segnames=engine.get("segnames");
-	var segindex={};
-	for (var i=1;i<=segnames.length;i++) {
-		var segname=segnames[i-1];
-		segindex[segname]=i; //assuming unique segname
+	if (!segnames) {
+		console.log("missing segnames, cannot build uti");
+		return;
 	}
+	var segindex={};
+	if (verbose) console.time("build segname index");
+	for (var i=0;i<segnames.length;i++) {
+		var segname=segnames[i];
+		segindex[segname]=i;
+	}
+	if (verbose) console.timeEnd("build segname index");
 	engine.txtid=segindex;
 }
 module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets
