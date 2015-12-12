@@ -18,6 +18,9 @@ var filterkdb=function(files,parent){
 	var output=[];
 	var fs=require("fs");
 	var path=require("path");
+	if (parent.length==3 && parent[1]==":") {
+		return output;
+	}
 	files.map(function(f){
 		var subdir=parent+path.sep+f;
 		var stat=fs.statSync(subdir);
@@ -36,6 +39,7 @@ var filterkdb=function(files,parent){
 	});
 	return output;
 }	
+
 
 var listkdb_node=function(cb,context){
 	var fs=require("fs");
