@@ -294,7 +294,7 @@ var getDefaultTOC=function(opts,cb,context) {
 		out.push({t:fn,d:depth, vpos:fileoffsets[i]});
 		var range=getFileRange.apply(this,[i]);
 		for (var j=range.start;j<range.end+1;j++) {
-			out.push({t:segnames[j],d:depth+1, vpos:segoffsets[j-1]||1});
+			out.push({t:segnames[j],d:depth+1, vpos:segoffsets[j]||1});
 		}
 	}
 	this.TOC["_"]=out;
