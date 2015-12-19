@@ -66,8 +66,14 @@ var getLocalTries=function(kdbfn,cb) {
 }
 
 var openLocalReactNative=function(kdbid,opts,cb,context) {
-
 	if (kdbid.indexOf(".kdb")==-1) kdbid+=".kdb";
+
+	var engine=localPool[kdbid];
+	if (engine) {
+		cb.apply(context||engine.context,[0,engine]);
+		return;
+	}
+
 	new Kdb.open(kdbid,function(err,kdb){
 		if (err) {
 			cb.apply(context,[err]);
@@ -83,6 +89,13 @@ var openLocalReactNative=function(kdbid,opts,cb,context) {
 
 var openLocalKsanagap=function(kdbid,opts,cb,context) {
 	var kdbfn=kdbid;
+
+
+	var engine=localPool[kdbid];
+	if (engine) {
+		cb.apply(context||engine.context,[0,engine]);
+		return;
+	}
 	var tries=getLocalTries(kdbfn);
 
 	for (var i=0;i<tries.length;i++) {
@@ -107,6 +120,13 @@ var openLocalKsanagap=function(kdbid,opts,cb,context) {
 }
 var openLocalNode=function(kdbid,opts,cb,context) {
 	var fs=require('fs');
+
+	var engine=localPool[kdbid];
+	if (engine) {
+		cb.apply(context||engine.context,[0,engine]);
+		return;
+	}
+
 	var tries=getLocalTries(kdbid);
 	for (var i=0;i<tries.length;i++) {
 		if (fs.existsSync(tries[i])) {
@@ -132,7 +152,7 @@ var openLocalFile=function(file,opts,cb,context) {
 
 		var engine=localPool[kdbid];
 		if (engine) {
-			cb(0,engine);
+			cb.apply(context||engine.context,[0,engine]);
 			return;
 		}
 
