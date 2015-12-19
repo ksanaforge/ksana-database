@@ -1,8 +1,14 @@
 var getPlatform=function() {
 	if (typeof ksanagap=="undefined") {
 		try {
-			require("react-native");
-			platform="react-native";
+			var react_native=require("react-native");
+
+			try {
+				require("react-native-android-kdb");
+				platform="react-native-android";
+			} catch (e) {
+				platform="react-native-ios";
+			}
 		} catch (e) {
 			if (typeof process=="undefined") {
 				platform="chrome";

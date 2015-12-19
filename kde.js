@@ -191,7 +191,7 @@ var open=function(kdbid,opts,cb,context)  {
 		openLocalNode(kdbid,opts,cb,context);
 	} else if (platform=="html5" || platform=="chrome"){
 		openLocalHtml5(kdbid,opts,cb,context);		
-	} else if (platform=="react-native") {
+	} else if (platform.substr(0,12)=="react-native") {
 		openLocalReactNative(kdbid,opts,cb,context);	
 	} else {
 		openLocalKsanagap(kdbid,opts,cb,context);	
@@ -230,7 +230,7 @@ var API={open:open,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:b
 kdbs:kdbs,listkdb:listkdb};
 
 var platform=require("./platform").getPlatform();
-if (platform=="node-webkit" || platform=="node" || platform=="react-native") {
+if (platform=="node-webkit" || platform=="node" || platform.substr(0,12)=="react-native") {
 	enumKdb();
 } else if (typeof io!=="undefined") {
 	API.rpc=require("./rpc_kde"); //for browser only

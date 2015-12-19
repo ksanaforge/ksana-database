@@ -6,6 +6,17 @@ var listkdb_html5=function(cb,context) {
 			cb.call(this,kdbs);
 	},context||this);		
 }
+var listkdb_rn_android=function(cb,context) {
+	/*
+	kfs=require("react-native-android-kdb");	
+	
+	kfs.readDir(".",function(kdbs){
+			cb.call(this,kdbs);
+	},context||this);		
+*/
+	cb(0,[]);
+}
+
 var listkdb_rpc=function() {
 	var fs=require("fs");
 	var path=require("path");
@@ -81,6 +92,10 @@ var listkdb=function(cb,context) {
 	if (platform=="node" || platform=="node-webkit") {
 		listkdb_node(cb,context);
 	} else if (platform=="chrome") {
+		listkdb_html5(cb,context);
+	} else if (platform=="react-native-android"){
+		listkdb_rn_android(cb,context);
+	} else if (platform=="react-native-ios"){
 		listkdb_html5(cb,context);
 	} else {
 		listkdb_ksanagap(cb,context);
