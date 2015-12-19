@@ -294,7 +294,7 @@ var getDefaultTOC=function(opts,cb,context) {
 		out.push({t:fn,d:depth, vpos:fileoffsets[i]});
 		var range=getFileRange.apply(this,[i]);
 		for (var j=range.start;j<range.end+1;j++) {
-			out.push({t:segnames[j],d:depth+1, vpos:segoffsets[j-1]||1});
+			out.push({t:segnames[j],d:depth+1, vpos:segoffsets[j]||1});
 		}
 	}
 	this.TOC["_"]=out;
@@ -370,13 +370,13 @@ var nextTxtid=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
 	if (!absseg) return;
 	var segnames=this.get("segnames");
-	return segnames[absseg];
+	return segnames[absseg+1];
 }
 var prevTxtid=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
 	if (!absseg) return;
 	var segnames=this.get("segnames");
-	return segnames[absseg-2];
+	return segnames[absseg-1];
 }
 var txtid2vpos=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
