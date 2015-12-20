@@ -6,6 +6,9 @@ var listkdb_html5=function(cb,context) {
 			cb.call(this,kdbs);
 	},context||this);		
 }
+var listkdb_rn_ios=function(cb,context) {
+	cb(0,[]);
+}
 var listkdb_rn_android=function(cb,context) {
 	/*
 	kfs=require("react-native-android-kdb");	
@@ -100,7 +103,7 @@ var listkdb=function(cb,context) {
 	} else if (platform=="react-native-android"){
 		listkdb_rn_android(cb,context);
 	} else if (platform=="react-native-ios"){
-		listkdb_html5(cb,context);
+		listkdb_rn_ios(cb,context);
 	} else {
 		listkdb_ksanagap(cb,context);
 	}

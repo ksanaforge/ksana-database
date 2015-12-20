@@ -31,10 +31,13 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		method.hotfix_segoffset_before20150710(engine);
 		method.buildSegnameIndex(engine);
 	}
+
+		var t=new Date();
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
 	method.gets.apply(engine,[ preload, opts,function(res){
 		setPreload(res);
+		console.log("pre load ",new Date()-t)
 		cb.apply(engine.context,[engine]);
 	}]);
 	return engine;
