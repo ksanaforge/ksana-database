@@ -37,7 +37,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	var opts={recursive:true};
 	method.gets.apply(engine,[ preload, opts,function(res){
 		setPreload(res);
-		console.log("pre load ",new Date()-t)
+		//console.log("pre load ",new Date()-t)
 		cb.apply(engine.context,[engine]);
 	}]);
 	return engine;
