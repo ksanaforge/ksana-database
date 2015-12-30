@@ -77,7 +77,7 @@ var openLocalReactNative=function(kdbid,opts,cb,context) {
 		return;
 	}
 
-	new Kdb.open(kdbid,function(err,kdb){
+	new Kdb.open(kdbid, opts, function(err,kdb){
 		if (err) {
 			cb.apply(context,[err]);
 		} else {
