@@ -1,13 +1,13 @@
-var indexOfSorted = function (array, obj, near) { 
-  var low = 0,
-  high = array.length;
+'use strict';
+var indexOfSorted = function (array, obj, near) {
+  var low = 0, high = array.length, mid;
   while (low < high) {
-    var mid = (low + high) >> 1;
-    if (array[mid]===obj) return mid;
+    mid = (low + high) >> 1;
+    if (array[mid] === obj) return mid;
     array[mid] < obj ? low = mid + 1 : high = mid;
   }
   if (near) return low;
-  else if (array[low]===obj) return low;else return -1;
+  else if (array[low] === obj) return low;else return -1;
 };
 var indexOfSorted_str = function (array, obj, near) { 
   var low = 0,

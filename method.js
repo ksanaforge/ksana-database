@@ -339,13 +339,13 @@ var prevSeg=function(segid) {
 
 var txt2absseg=function(txtid) {
 	var absseg=this.txtid[txtid];
-	if (!absseg) return null;
+	if (isNaN(absseg)) return null;
 	if (typeof absseg[0]==="number") absseg=absseg[0];
 	return absseg;
 }
 var txtid2fileSeg=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
-	if (!absseg) return;
+	if (isNaN(absseg)) return;
 	return absSegToFileSeg.call(this,absseg);
 }
 
@@ -357,19 +357,19 @@ var vpos2txtid=function(vpos){
 
 var nextTxtid=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
-	if (!absseg) return;
+	if (isNaN(absseg)) return;
 	var segnames=this.get("segnames");
 	return segnames[absseg+1];
 }
 var prevTxtid=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
-	if (!absseg) return;
+	if (isNaN(absseg)) return;
 	var segnames=this.get("segnames");
 	return segnames[absseg-1];
 }
 var txtid2vpos=function(txtid) {
 	var absseg=txt2absseg.call(this,txtid);
-	if (!absseg) return;
+	if (isNaN(absseg)) return;
 	var segoffsets=this.get("segoffsets");
 	return segoffsets[absseg];
 
