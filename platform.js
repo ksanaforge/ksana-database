@@ -5,7 +5,6 @@ var getPlatform=function() {
 			try {
 				var OS=react_native.Platform.OS;
 				if (OS==='android') {
-					require("react-native-android-kdb");
 					platform="react-native-android";					
 				} else {
 					platform="react-native-ios";	
