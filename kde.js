@@ -14,6 +14,7 @@ var strsep="\uffff";
 var kdblisted=false;
 
 var method=require("./method");
+var analyzer=require("ksana-analyzer");
 
 
 var createLocalEngine=function(kdb,opts,cb,context) {
@@ -30,6 +31,9 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		engine.ready=true;
 		method.hotfix_segoffset_before20150710(engine);
 		method.buildSegnameIndex(engine);
+
+		var config=engine.get("meta").config;
+		if (config) engine.analyzer=analyzer.getAPI(config);			
 	}
 
 		var t=new Date();

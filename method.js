@@ -399,7 +399,7 @@ var setup=function(engine) {
 	engine.vpos2txtid=vpos2txtid;
 	engine.txtid2fileSeg=txtid2fileSeg;
 	engine.nextTxtid=nextTxtid;
-	engine.prevTxtid=prevTxtid;
+	engine.prevTxtid=prevTxtid;	
 }
 var hotfix_segoffset_before20150710=function(engine) {
 	var so=engine.get("segoffsets");

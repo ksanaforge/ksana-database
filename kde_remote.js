@@ -2,6 +2,7 @@ var pool={};
 var strsep="\uffff";
 var method=require("./method");
 var verbose=false;
+var analyzer=require("ksana-analyzer");
 
 var getRemote=function(path,opts,cb) {
 
@@ -85,6 +86,9 @@ var createRemoteEngine=function(kdb,opts,cb,context) {
 		engine.ready=true;
 		method.hotfix_segoffset_before20150710(engine);
 		method.buildSegnameIndex(engine);
+
+		var config=engine.get("meta").config;
+		if (config) engine.analyzer=analyzer.getAPI(config);
 	}
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
