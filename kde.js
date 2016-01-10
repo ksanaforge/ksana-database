@@ -16,9 +16,10 @@ var kdblisted=false;
 var method=require("./method");
 var analyzer=require("ksana-analyzer");
 
-
+var opening="";
 var createLocalEngine=function(kdb,opts,cb,context) {
-	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{} };
+
+	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{} , timing:{}};
 	if (typeof context=="object") engine.context=context;
 	method.setup(engine);
 	//speedy native functions
@@ -36,12 +37,13 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		if (config) engine.analyzer=analyzer.getAPI(config);			
 	}
 
-		var t=new Date();
+	var t=new Date();
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
+
 	method.gets.apply(engine,[ preload, opts,function(res){
 		setPreload(res);
-		//console.log("pre load ",new Date()-t)
+		engine.timing.preload=new Date()-t;
 		cb.apply(engine.context,[engine]);
 	}]);
 	return engine;
@@ -72,6 +74,7 @@ var getLocalTries=function(kdbfn,cb) {
 	return tries;;
 }
 
+var opening="";
 var openLocalReactNative=function(kdbid,opts,cb,context) {
 	if (kdbid.indexOf(".kdb")==-1) kdbid+=".kdb";
 
@@ -81,12 +84,17 @@ var openLocalReactNative=function(kdbid,opts,cb,context) {
 		return;
 	}
 
+	if (kdbid==opening) {
+		throw "nested open kdb!! "+kdbid;
+	}
+	opening=kdbid;
 	new Kdb.open(kdbid,function(err,kdb){
 		if (err) {
 			cb.apply(context,[err]);
 		} else {
 			createLocalEngine(kdb,opts,function(engine){
 				localPool[kdbid]=engine;
+				opening='';
 				cb.apply(context||engine.context,[0,engine]);
 			},context);
 		}
@@ -134,6 +142,11 @@ var openLocalNode=function(kdbid,opts,cb,context) {
 		return;
 	}
 
+	if (kdbid==opening) {
+		throw "nested open kdb!! "+kdbid;
+	}
+	opening=kdbid;
+
 	var tries=getLocalTries(kdbid);
 	for (var i=0;i<tries.length;i++) {
 		if (fs.existsSync(tries[i])) {
@@ -144,6 +157,7 @@ var openLocalNode=function(kdbid,opts,cb,context) {
 				} else {
 					createLocalEngine(kdb,opts,function(engine){
 						localPool[kdbid]=engine;
+						opening="";
 						cb.apply(context||engine.context,[0,engine]);
 					},context);
 				}
@@ -157,6 +171,11 @@ var openLocalNode=function(kdbid,opts,cb,context) {
 var openLocalFile=function(file,opts,cb,context) {	
     var kdbid=file.name.substr(0,file.name.length-4);
 
+		if (kdbid==opening) {
+			throw "nested open kdb!! "+kdbid;
+		}
+		opening=kdbid;
+
 		var engine=localPool[kdbid];
 		if (engine) {
 			cb.apply(context||engine.context,[0,engine]);
@@ -166,6 +185,7 @@ var openLocalFile=function(file,opts,cb,context) {
 		new Kdb.open(file,function(err,handle){
 			createLocalEngine(handle,opts,function(engine){
 				localPool[kdbid]=engine;
+				opening="";
 				cb.apply(context||engine.context,[0,engine]);
 			},context);
 		});
@@ -175,6 +195,12 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 	var engine=localPool[kdbid];
 	var kdbfn=kdbid;
 	if (kdbfn.indexOf(".kdb")==-1) kdbfn+=".kdb";
+
+	if (kdbid==opening) {
+		throw "nested open kdb!! "+kdbid;
+	}
+	opening=kdbid;
+
 	new Kdb.open(kdbfn,function(err,handle){
 		if (err) {
 			var remoteurl=window.location.origin+window.location.pathname+kdbid;
@@ -184,6 +210,7 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 		} else {
 			createLocalEngine(handle,opts,function(engine){
 				localPool[kdbid]=engine;
+				opening="";
 				cb.apply(context||engine.context,[0,engine]);
 			},context);
 		}
