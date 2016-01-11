@@ -35,6 +35,7 @@ var gets=function(paths,opts,cb) { //get many data with one call
 
 var localengine_get=function(path,opts,cb,context) {
 	var engine=this;
+
 	if (typeof opts=="function") {
 		context=cb;
 		cb=opts;
@@ -49,15 +50,30 @@ var localengine_get=function(path,opts,cb,context) {
 		return engine.kdb.get(path,opts);
 	}
 
-	if (typeof path=="string") {
-		return engine.kdb.get([path],opts,cb,context);
-	} else if (typeof path[0] =="string") {
-		return engine.kdb.get(path,opts,cb,context);
+	if (engine.busy) {
+		var msg="engine is busy, getting "+JSON.stringify(this.busy)+" cuurent path"+JSON.stringify(path);
+		cb(msg);
+	}
+
+	if (typeof path==="string") {
+		path=[path];
+	}
+
+	if (typeof path[0] =="string") {
+		engine.busy=path;
+		return engine.kdb.get(path,opts,function(data){
+			engine.busy=null;
+			cb.call(context,data);//return top level keys
+		},context);
 	} else if (typeof path[0] =="object") {
-		return gets.apply(engine,[path,opts,cb,context]);
+		return gets.call(engine,path,opts,function(data){
+			cb.call(context,data);//return top level keys
+		},context);
 	} else {
+		engine.busy=path;
 		engine.kdb.get([],opts,function(data){
-			cb.apply(context,[data]);//return top level keys
+			engine.busy=null;
+			cb.call(context,data);//return top level keys
 		},context);
 	}
 };	
