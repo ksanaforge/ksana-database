@@ -33,7 +33,9 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		method.hotfix_segoffset_before20150710(engine);
 		method.buildSegnameIndex(engine);
 
+
 		var config=engine.get("meta").config;
+		engine.sidsep=engine.get("meta").sidsep||"@";
 		if (config) engine.analyzer=analyzer.getAPI(config);			
 	}
 

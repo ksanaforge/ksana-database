@@ -1,5 +1,6 @@
 var bsearch=require("./bsearch");
 var verbose=false;
+
 var gets=function(paths,opts,cb) { //get many data with one call
 
 	if (!paths) return ;
@@ -93,7 +94,6 @@ var getFileRange=function(i) {
 	var filenames=engine.get(["filenames"]);
 	var fileoffsets=engine.get(["fileoffsets"]);
 	var segoffsets=engine.get(["segoffsets"]);
-	var segnames=engine.get(["segnames"]);
 	var filestart=fileoffsets[i], fileend=fileoffsets[i+1]-1;
 
 	var start=bsearch(segoffsets,filestart,true);
@@ -139,6 +139,8 @@ var fileSegToAbsSeg=function(file,seg) {
 //	segid-=range.start;
 //    return {file:fileid,seg:segid};
 //}
+
+/*
 var searchSeg=function(segname,near) {
 	var i=bsearch(this.get("segnames"),segname,near);
 	if (i>-1) {
@@ -165,6 +167,7 @@ var findSeg=function(segname,max) {
 	}
 	return out;
 }
+*/
 var findFile=function(filename) {
 	var filenames=this.get("filenames");
 	for (var i=0;i<filenames.length;i++) {
@@ -187,9 +190,20 @@ var absSegFromVpos=function(vpos) {
 	return i;
 }
 
+//accept vpos or [vpos]
 var fileSegFromVpos=function(vpos) { 
-	var seg=absSegFromVpos.call(this,vpos);
-	return absSegToFileSeg.call(this,seg);
+	var one=false;
+	if (typeof vpos==="number") {
+		vpos=[vpos];
+		one=true;
+	}
+	var out,i;
+	for (i=0;i<vpos.length;i++) {
+		out.push(absSegToFileSeg.call(this,absSegFromVpos.call(this,vpos[i])));
+	}
+
+	if (one)return out[0];
+	return out;
 }
 var fileSegToVpos=function(f,s) {
 	var segoffsets=this.get(["segoffsets"]);
@@ -200,15 +214,19 @@ var absSegToVpos=function(seg) {
 	var segoffsets=this.get("segoffsets");
 	return segoffsets[seg]||0;	
 }
+
+/*
 var getFileSegNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	var segnames=this.get("segnames");
 	return segnames.slice(range.start,range.end+1);
 }
+*/
+
+
 
 var getPreloadField=function(user) {
-	var preload=[["meta"],["filenames"],["fileoffsets"],["segnames"],
-	["segoffsets"],["filesegcount"]];
+	var preload=[["meta"],["filenames"],["fileoffsets"],["segoffsets"],["filesegcount"]];
 
 	//,["txtid"],["txtid_idx"],["txtid_invert"]];
 	//["tokens"],["postingslen"] kse will load it
@@ -223,7 +241,7 @@ var getPreloadField=function(user) {
 	return preload;
 }
 
-
+/*
 var segOffset=function(segname) {
 	var engine=this;
 	if (arguments.length>1) throw "argument : segname ";
@@ -234,6 +252,7 @@ var segOffset=function(segname) {
 	var i=segNames.indexOf(segname);
 	return (i>-1)?segOffsets[i]:0;
 }
+*/
 var fileOffset=function(fn) {
 	var engine=this;
 	var filenames=engine.get("filenames");
@@ -353,6 +372,16 @@ var prevSeg=function(segid) {
 }
 //return file seg of first txtid
 
+var getFileSegFromUti=function(uti,cb){
+	if (typeof uti==="number") uti=[uti];
+	//get file segments from uti
+	//break uti to nfile@sid
+	//get all files
+	//load segment id of files
+	//get nseg by indexOf sid
+
+}
+/*
 var txt2absseg=function(txtid) {
 	var absseg=this.txtid[txtid];
 	if (isNaN(absseg)) return null;
@@ -364,6 +393,7 @@ var txtid2fileSeg=function(txtid) {
 	if (isNaN(absseg)) return;
 	return absSegToFileSeg.call(this,absseg);
 }
+
 
 var vpos2txtid=function(vpos){
 	var absseg=this.absSegFromVpos(vpos);
@@ -388,18 +418,85 @@ var txtid2vpos=function(txtid) {
 	if (isNaN(absseg)) return;
 	var segoffsets=this.get("segoffsets");
 	return segoffsets[absseg];
+}
+*/
+var parseUti=function(uti){
+	var one=false,out=[];
+	if (typeof uti==="string") {
+		uti=[uti];
+		one=true;
+	}
+	out=uti.map(function(u){
+		var r=u.split(this.sidsep);
+		return [parseInt(r[0]),r[1]];
+	});
+
+	if (one) return out[0];
+	return out;
+}
+var loadSegmentId=function(nfiles,cb){ //nfiles can be [nfile,nfile] or [ {file,seg},{file,seg}]
 
 }
+
+var vpos2uti=function(vpos,cb){
+	//if cb is not supply , assuming segments already loaded
+	var fileseg=this.fileSegFromVpos(vpos);
+	if (cb) {
+		this.get(["segments",fileseg.file],function(segments){
+			cb(segnames[absseg]);
+		});
+	} else {
+		var segments=this.get(["segments",fileseg.file];
+		return segments[fileseg.seg];		
+	}
+}
+var uti2vpos=function(uti,cb){ //sync function, ensure segment id is in memory
+	//if cb is not supply , assuming segments already loaded	
+	var one=false;
+	var nfile_sid=this.parseUti(uti),i;
+	var segoffsets=this.get("segoffsets");
+	if (typeof uti==="string") {
+		nfile_sid=[nfile_sid];
+		one=true;
+	}
+
+	var getvpos=function(){
+		var out=[];
+		for (i=0;i<nfile_sid.length;i+=1) {
+			var segments=this.get("segments",nfile_sid[i]);
+			p=segments.indexOf(nfile_sid[1]);
+			var absseg=fileSegToAbsSeg(nfile_sid[0],nfile_sid[1]);
+			out.push(segoffsets[absseg]);
+		}		
+		return out;
+	}
+
+	var nfiles=nfile_sid.map(function(item){return item[0]});
+	if (cb) {
+		this.loadSegmentId(nfiles,function(){
+			out=getvpos();
+			if (one) out=out[0];
+			cb(out);
+		})
+	} else {
+		out=getvpos();
+		if (one) out=out[0];
+		return out;
+	}	
+}
+
+
 var setup=function(engine) {
 	engine.get=localengine_get;
-	engine.segOffset=segOffset;
+	//engine.segOffset=segOffset;
 	engine.fileOffset=fileOffset;
 	engine.folderOffset=folderOffset;
-	engine.getFileSegNames=getFileSegNames;
+	//engine.getFileSegNames=getFileSegNames;
+	engine.getFileSegments=getFileSegments;
 	engine.getFileSegOffsets=getFileSegOffsets;
 	engine.getFileRange=getFileRange;
-	engine.findSeg=findSeg;
-	engine.searchSeg=searchSeg;
+	//engine.findSeg=findSeg;
+	//engine.searchSeg=searchSeg;
 	engine.findFile=findFile;
 	engine.absSegToFileSeg=absSegToFileSeg;
 	engine.fileSegToAbsSeg=fileSegToAbsSeg;
@@ -407,15 +504,27 @@ var setup=function(engine) {
 	engine.absSegFromVpos=absSegFromVpos;
 	engine.absSegToVpos=absSegToVpos;
 	engine.fileSegToVpos=fileSegToVpos;
+
+	engine.getFileSegFromUti=getFileSegFromUti;
 	engine.getTOC=getTOC;
 	engine.getTOCNames=getTOCNames;
 	engine.nextSeg=nextSeg;
 	engine.prevSeg=prevSeg;
+
+	engine.vpos2uti=vpos2uti;
+	engine.uti2vpos=uti2vpos;
+	engine.loadSegmentId=loadSegmentId;
+
+	engine.sidsep=sidsep;
+
+	engine.parseUti=parseUti;
+	/*
 	engine.txtid2vpos=txtid2vpos;
 	engine.vpos2txtid=vpos2txtid;
 	engine.txtid2fileSeg=txtid2fileSeg;
 	engine.nextTxtid=nextTxtid;
 	engine.prevTxtid=prevTxtid;	
+	*/
 }
 var hotfix_segoffset_before20150710=function(engine) {
 	var so=engine.get("segoffsets");

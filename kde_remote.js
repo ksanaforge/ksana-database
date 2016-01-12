@@ -89,6 +89,8 @@ var createRemoteEngine=function(kdb,opts,cb,context) {
 
 		var config=engine.get("meta").config;
 		if (config) engine.analyzer=analyzer.getAPI(config);
+
+		engine.sidsep=engine.get("meta").sidsep||"@";
 	}
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
