@@ -91,7 +91,7 @@ var getFileRange=function(i) {
 		}
 	}
 	//old buggy code
-	var filenames=engine.get(["filenames"]);
+	//var filenames=engine.get(["filenames"]);
 	var fileoffsets=engine.get(["fileoffsets"]);
 	var segoffsets=engine.get(["segoffsets"]);
 	var filestart=fileoffsets[i], fileend=fileoffsets[i+1]-1;
@@ -168,6 +168,7 @@ var findSeg=function(segname,max) {
 	return out;
 }
 */
+/*
 var findFile=function(filename) {
 	var filenames=this.get("filenames");
 	for (var i=0;i<filenames.length;i++) {
@@ -175,6 +176,7 @@ var findFile=function(filename) {
 	}
 	return -1;
 }
+*/
 
 var getFileSegOffsets=function(i) {
 	var segoffsets=this.get("segoffsets");
@@ -197,7 +199,7 @@ var fileSegFromVpos=function(vpos) {
 		vpos=[vpos];
 		one=true;
 	}
-	var out,i;
+	var out=[],i;
 	for (i=0;i<vpos.length;i++) {
 		out.push(absSegToFileSeg.call(this,absSegFromVpos.call(this,vpos[i])));
 	}
@@ -253,6 +255,7 @@ var segOffset=function(segname) {
 	return (i>-1)?segOffsets[i]:0;
 }
 */
+/*
 var fileOffset=function(fn) {
 	var engine=this;
 	var filenames=engine.get("filenames");
@@ -275,9 +278,11 @@ var folderOffset=function(folder) {
 	}
 	return {start:start,end:end};
 }
+*/
 var getTOCNames=function() {
 	return engine.get("meta").tocs;
 }
+
 var buildToc = function(toc) {
 	if (!toc || !toc.length || toc.built) return;
 	var depths=[];
@@ -298,6 +303,7 @@ var buildToc = function(toc) {
 	toc.built=true;
 	return toc;
 }
+/*
 var getDefaultTOC=function(opts,cb,context) {
 	var toc=this.TOC["_"];
 	if (toc) {
@@ -325,12 +331,19 @@ var getDefaultTOC=function(opts,cb,context) {
   cb.call(context,out);
 	return out;		
 }
+*/
 var getTOC=function(opts,cb,context) {
 	var engine=this;
 	opts=opts||{};
 	var tocname=opts.tocname;
 	var rootname=opts.rootname||opts.tocname;
-	if (!tocname) return getDefaultTOC.call(this,opts,cb,context);
+
+	if (!tocname) {
+		cb("tocname cannot be empty");
+		return;
+			//return getDefaultTOC.call(this,opts,cb,context);
+	}
+	
 
 	var toc=engine.TOC[tocname];
 	if (toc) {
@@ -372,15 +385,210 @@ var prevSeg=function(segid) {
 }
 //return file seg of first txtid
 
+
+
+var parseUti=function(uti){
+	//uti = filename@sid , nfile@sid
+	
+	//return [nfile, sid];
+	var one=false,out=[];
+	if (typeof uti==="string") {
+		uti=[uti];
+		one=true;
+	}
+	var filenames=this.get("filenames");
+	out=uti.map(function(u){
+		var r=u.split(this.sidsep);
+		if (isNaN(parseInt(r[0]))) {
+			var nfile=filenames.indexOf(r[0]);
+			return [nfile,r[1], filenames[nfile]];
+		} else {
+			return [parseInt(r[0]),r[1],filenames[parseInt(r[0])]];
+		}
+		
+	}.bind(this));
+
+	if (one) return out[0];
+	return out;
+}
+
 var getFileSegFromUti=function(uti,cb){
-	if (typeof uti==="number") uti=[uti];
+	if (typeof uti==="string") uti=[uti];
 	//get file segments from uti
 	//break uti to nfile@sid
 	//get all files
 	//load segment id of files
 	//get nseg by indexOf sid
-
+	var nfile_sid=uti.map(parseUti.bind(this));
+	var nfiles=nfile_sid.map(function(item){return item[0]});
+	this.loadSegmentId(nfiles,function(){
+		var out=nfile_sid.map(function(ns){
+			var segments=this.get(["segments",ns[0]]);
+			if (!segments) {
+				return {file:-1,seg:-1}	;
+			}
+			seg=segments.indexOf(ns[1]);
+			return {file:ns[0],seg:seg};
+		}.bind(this));
+		cb(out);
+	});
 }
+
+// make sure segments of nfiles in loaded 
+var loadSegmentId=function(nfiles,cb){ //nfiles can be [nfile,nfile] or [ {file,seg},{file,seg}]
+	var files={},db=this;
+	nfiles.map(function(nfile){
+		if (typeof nfile.file==="number") {
+			files[nfile]=true;
+		} else if (typeof nfile[0]==="number") {
+			files[nfiles[0]]=true;
+		} else if (typeof nfile==="number"){
+			files[nfile]=true;
+		}
+	});
+
+	var files=Object.keys(files).map(function(item){return parseInt(item)});
+	var keys=files.map(function(file){
+		return ['segments',file];
+	});
+	
+
+	db.get(keys,function(data){
+		cb.call(this,data);
+	}.bind(this));
+}
+
+var vpos2uti=function(vpos,cb){
+	//if cb is not supply , assuming segments already loaded
+	var fileseg=this.fileSegFromVpos(vpos);
+	var filenames=this.get("filenames");
+	if (cb) {
+		this.get(["segments",fileseg.file],function(segments){
+			cb(filenames[fileseg.file]+this.sidsep+segments[fileseg.seg]);
+		});
+	} else {
+		var segments=this.get(["segments",fileseg.file]);
+		return filenames[fileseg.file]+this.sidsep+segments[fileseg.seg];		
+	}
+}
+var uti2vpos=function(uti,cb){ //sync function, ensure segment id is in memory
+	//if cb is not supply , assuming segments already loaded	
+	var one=false;
+	var nfile_sid=this.parseUti(uti),i;
+	var segoffsets=this.get("segoffsets");
+	if (typeof uti==="string") {
+		nfile_sid=[nfile_sid];
+		one=true;
+	}
+
+	var getvpos=function(){
+		var out=[];
+		for (i=0;i<nfile_sid.length;i+=1) {
+			var segments=this.get("segments",nfile_sid[i]);
+			p=segments.indexOf(nfile_sid[1]);
+			var absseg=fileSegToAbsSeg(nfile_sid[0],nfile_sid[1]);
+			out.push(segoffsets[absseg]);
+		}		
+		return out;
+	}
+
+	var nfiles=nfile_sid.map(function(item){return item[0]});
+	if (cb) {
+		this.loadSegmentId(nfiles,function(){
+			out=getvpos();
+			if (one) out=out[0];
+			cb(out);
+		})
+	} else {
+		out=getvpos();
+		if (one) out=out[0];
+		return out;
+	}	
+}
+
+var fileSeg2uti=function(fseg,cb){
+	var filenames=this.get("filenames");
+	if (cb) {
+		this.get(["segments",fseg.file],function(segments){
+			cb(filenames[fseg.file]+this.sidsep+segments[fset.seg]);
+		});
+	} else {
+		var segments=this.get(["segments",fseg.file]);
+		return filenames[fseg.file]+this.sidsep+segments[fseg.seg];		
+	}
+}
+var setup=function(engine) {
+	engine.get=localengine_get;
+	//engine.segOffset=segOffset;
+	//engine.fileOffset=fileOffset;
+	//engine.folderOffset=folderOffset;
+	//engine.getFileSegNames=getFileSegNames;
+	//engine.getFileSegments=getFileSegments;
+	engine.getFileSegOffsets=getFileSegOffsets;
+	engine.getFileRange=getFileRange;
+	//engine.findSeg=findSeg;
+	//engine.searchSeg=searchSeg;
+	//engine.findFile=findFile;
+	engine.absSegToFileSeg=absSegToFileSeg;
+	engine.fileSegToAbsSeg=fileSegToAbsSeg;
+	engine.fileSegFromVpos=fileSegFromVpos;
+	engine.absSegFromVpos=absSegFromVpos;
+	engine.absSegToVpos=absSegToVpos;
+	engine.fileSegToVpos=fileSegToVpos;
+
+	engine.getFileSegFromUti=getFileSegFromUti;
+	engine.getTOC=getTOC;
+	engine.getTOCNames=getTOCNames;
+	engine.nextSeg=nextSeg;
+	engine.prevSeg=prevSeg;
+
+	engine.vpos2uti=vpos2uti;
+	engine.uti2vpos=uti2vpos;
+	engine.fileSeg2uti=fileSeg2uti;
+	engine.loadSegmentId=loadSegmentId;
+
+	engine.parseUti=parseUti;
+
+	/*
+	engine.txtid2vpos=txtid2vpos;
+	engine.vpos2txtid=vpos2txtid;
+	engine.txtid2fileSeg=txtid2fileSeg;
+	engine.nextTxtid=nextTxtid;
+	engine.prevTxtid=prevTxtid;	
+	*/
+}
+
+module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets};
+/*
+var hotfix_segoffset_before20150710=function(engine) {
+	var so=engine.get("segoffsets");
+	if (!so) so=engine.get("segOffsets");
+	if (!so) return;
+	if (so.length>2 && so[so.length-1]===so[so.length-2]) {
+		so.unshift(1);
+		so.pop();
+		console.log("old segoffsets, better rebuild your kdb")
+	}
+}
+*/
+/*
+var buildSegnameIndex=function(engine){
+	/ replace txtid,txtid_idx, txtid_invert , save 400ms load time 
+	var segnames=engine.get("segnames");
+	if (!segnames) {
+		console.log("missing segnames, cannot build uti");
+		return;
+	}
+	var segindex={};
+	if (verbose) console.time("build segname index");
+	for (var i=0;i<segnames.length;i++) {
+		var segname=segnames[i];
+		segindex[segname]=i;
+	}
+	if (verbose) console.timeEnd("build segname index");
+	engine.txtid=segindex;
+}
+*/
 /*
 var txt2absseg=function(txtid) {
 	var absseg=this.txtid[txtid];
@@ -420,138 +628,3 @@ var txtid2vpos=function(txtid) {
 	return segoffsets[absseg];
 }
 */
-var parseUti=function(uti){
-	var one=false,out=[];
-	if (typeof uti==="string") {
-		uti=[uti];
-		one=true;
-	}
-	out=uti.map(function(u){
-		var r=u.split(this.sidsep);
-		return [parseInt(r[0]),r[1]];
-	});
-
-	if (one) return out[0];
-	return out;
-}
-var loadSegmentId=function(nfiles,cb){ //nfiles can be [nfile,nfile] or [ {file,seg},{file,seg}]
-
-}
-
-var vpos2uti=function(vpos,cb){
-	//if cb is not supply , assuming segments already loaded
-	var fileseg=this.fileSegFromVpos(vpos);
-	if (cb) {
-		this.get(["segments",fileseg.file],function(segments){
-			cb(segnames[absseg]);
-		});
-	} else {
-		var segments=this.get(["segments",fileseg.file];
-		return segments[fileseg.seg];		
-	}
-}
-var uti2vpos=function(uti,cb){ //sync function, ensure segment id is in memory
-	//if cb is not supply , assuming segments already loaded	
-	var one=false;
-	var nfile_sid=this.parseUti(uti),i;
-	var segoffsets=this.get("segoffsets");
-	if (typeof uti==="string") {
-		nfile_sid=[nfile_sid];
-		one=true;
-	}
-
-	var getvpos=function(){
-		var out=[];
-		for (i=0;i<nfile_sid.length;i+=1) {
-			var segments=this.get("segments",nfile_sid[i]);
-			p=segments.indexOf(nfile_sid[1]);
-			var absseg=fileSegToAbsSeg(nfile_sid[0],nfile_sid[1]);
-			out.push(segoffsets[absseg]);
-		}		
-		return out;
-	}
-
-	var nfiles=nfile_sid.map(function(item){return item[0]});
-	if (cb) {
-		this.loadSegmentId(nfiles,function(){
-			out=getvpos();
-			if (one) out=out[0];
-			cb(out);
-		})
-	} else {
-		out=getvpos();
-		if (one) out=out[0];
-		return out;
-	}	
-}
-
-
-var setup=function(engine) {
-	engine.get=localengine_get;
-	//engine.segOffset=segOffset;
-	engine.fileOffset=fileOffset;
-	engine.folderOffset=folderOffset;
-	//engine.getFileSegNames=getFileSegNames;
-	engine.getFileSegments=getFileSegments;
-	engine.getFileSegOffsets=getFileSegOffsets;
-	engine.getFileRange=getFileRange;
-	//engine.findSeg=findSeg;
-	//engine.searchSeg=searchSeg;
-	engine.findFile=findFile;
-	engine.absSegToFileSeg=absSegToFileSeg;
-	engine.fileSegToAbsSeg=fileSegToAbsSeg;
-	engine.fileSegFromVpos=fileSegFromVpos;
-	engine.absSegFromVpos=absSegFromVpos;
-	engine.absSegToVpos=absSegToVpos;
-	engine.fileSegToVpos=fileSegToVpos;
-
-	engine.getFileSegFromUti=getFileSegFromUti;
-	engine.getTOC=getTOC;
-	engine.getTOCNames=getTOCNames;
-	engine.nextSeg=nextSeg;
-	engine.prevSeg=prevSeg;
-
-	engine.vpos2uti=vpos2uti;
-	engine.uti2vpos=uti2vpos;
-	engine.loadSegmentId=loadSegmentId;
-
-	engine.sidsep=sidsep;
-
-	engine.parseUti=parseUti;
-	/*
-	engine.txtid2vpos=txtid2vpos;
-	engine.vpos2txtid=vpos2txtid;
-	engine.txtid2fileSeg=txtid2fileSeg;
-	engine.nextTxtid=nextTxtid;
-	engine.prevTxtid=prevTxtid;	
-	*/
-}
-var hotfix_segoffset_before20150710=function(engine) {
-	var so=engine.get("segoffsets");
-	if (!so) so=engine.get("segOffsets");
-	if (!so) return;
-	if (so.length>2 && so[so.length-1]===so[so.length-2]) {
-		so.unshift(1);
-		so.pop();
-		console.log("old segoffsets, better rebuild your kdb")
-	}
-}
-var buildSegnameIndex=function(engine){
-	/* replace txtid,txtid_idx, txtid_invert , save 400ms load time */
-	var segnames=engine.get("segnames");
-	if (!segnames) {
-		console.log("missing segnames, cannot build uti");
-		return;
-	}
-	var segindex={};
-	if (verbose) console.time("build segname index");
-	for (var i=0;i<segnames.length;i++) {
-		var segname=segnames[i];
-		segindex[segname]=i;
-	}
-	if (verbose) console.timeEnd("build segname index");
-	engine.txtid=segindex;
-}
-module.exports={setup:setup,getPreloadField:getPreloadField,gets:gets
-	,hotfix_segoffset_before20150710:hotfix_segoffset_before20150710
-	,buildSegnameIndex:buildSegnameIndex};

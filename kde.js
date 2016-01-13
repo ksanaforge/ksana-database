@@ -30,8 +30,8 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		engine.dbname=res[0].name;
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
-		method.hotfix_segoffset_before20150710(engine);
-		method.buildSegnameIndex(engine);
+		//method.hotfix_segoffset_before20150710(engine);
+		//method.buildSegnameIndex(engine);
 
 
 		var config=engine.get("meta").config;
@@ -46,6 +46,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	method.gets.apply(engine,[ preload, opts,function(res){
 		setPreload(res);
 		engine.timing.preload=new Date()-t;
+		//console.log(engine.timing.preload,preload)
 		cb.apply(engine.context,[engine]);
 	}]);
 	return engine;

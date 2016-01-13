@@ -84,8 +84,8 @@ var createRemoteEngine=function(kdb,opts,cb,context) {
 		engine.dbname=res[0].name;
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
-		method.hotfix_segoffset_before20150710(engine);
-		method.buildSegnameIndex(engine);
+		//method.hotfix_segoffset_before20150710(engine);
+		//method.buildSegnameIndex(engine);
 
 		var config=engine.get("meta").config;
 		if (config) engine.analyzer=analyzer.getAPI(config);
