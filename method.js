@@ -210,7 +210,7 @@ var fileSegFromVpos=function(vpos) {
 var fileSegToVpos=function(f,s) {
 	var segoffsets=this.get(["segoffsets"]);
 	var seg=fileSegToAbsSeg.call(this,f,s);
-	return segoffsets[seg-1]||0;
+	return segoffsets[seg]||0;
 }
 var absSegToVpos=function(seg) {
 	var segoffsets=this.get("segoffsets");
@@ -437,9 +437,10 @@ var getFileSegFromUti=function(uti,cb){
 // make sure segments of nfiles in loaded 
 var loadSegmentId=function(nfiles,cb){ //nfiles can be [nfile,nfile] or [ {file,seg},{file,seg}]
 	var files={},db=this;
+
 	nfiles.map(function(nfile){
 		if (typeof nfile.file==="number") {
-			files[nfile]=true;
+			files[nfile.file]=true;
 		} else if (typeof nfile[0]==="number") {
 			files[nfiles[0]]=true;
 		} else if (typeof nfile==="number"){
@@ -482,12 +483,18 @@ var uti2vpos=function(uti,cb){ //sync function, ensure segment id is in memory
 	}
 
 	var getvpos=function(){
-		var out=[];
+		var out=[],nfile;
 		for (i=0;i<nfile_sid.length;i+=1) {
-			var segments=this.get("segments",nfile_sid[i]);
-			p=segments.indexOf(nfile_sid[1]);
-			var absseg=fileSegToAbsSeg(nfile_sid[0],nfile_sid[1]);
-			out.push(segoffsets[absseg]);
+			nfile=nfile_sid[i][0];
+			if (nfile>-1) {
+				var segments=this.get(["segments",nfile]);
+
+				p=segments.indexOf(nfile_sid[i][1]);
+
+				var absseg=this.fileSegToAbsSeg(nfile,p);
+				out.push(segoffsets[absseg]);
+				
+			}
 		}		
 		return out;
 	}
@@ -495,12 +502,13 @@ var uti2vpos=function(uti,cb){ //sync function, ensure segment id is in memory
 	var nfiles=nfile_sid.map(function(item){return item[0]});
 	if (cb) {
 		this.loadSegmentId(nfiles,function(){
-			out=getvpos();
+
+			out=getvpos.call(this);
 			if (one) out=out[0];
 			cb(out);
-		})
+		}.bind(this));
 	} else {
-		out=getvpos();
+		out=getvpos.call(this);
 		if (one) out=out[0];
 		return out;
 	}	
