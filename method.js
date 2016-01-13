@@ -466,7 +466,7 @@ var vpos2uti=function(vpos,cb){
 	if (cb) {
 		this.get(["segments",fileseg.file],function(segments){
 			cb(filenames[fileseg.file]+this.sidsep+segments[fileseg.seg]);
-		});
+		}.bind(this));
 	} else {
 		var segments=this.get(["segments",fileseg.file]);
 		return filenames[fileseg.file]+this.sidsep+segments[fileseg.seg];		
