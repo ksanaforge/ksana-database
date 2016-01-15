@@ -33,17 +33,19 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		//method.hotfix_segoffset_before20150710(engine);
 		//method.buildSegnameIndex(engine);
 
-
 		var config=engine.get("meta").config;
 		engine.sidsep=engine.get("meta").sidsep||"@";
-		if (config) engine.analyzer=analyzer.getAPI(config);			
+		if (config) engine.analyzer=analyzer.getAPI(config);
+		if (opts.metaonly) engine.meta=engine.get("meta");// kdb will be closed soon, getSync is not available
 	}
 
 	var t=new Date();
 	var preload=method.getPreloadField(opts.preload);
-	var opts={recursive:true};
+	if (opts.metaonly) {
+			preload=["meta"];
+	}
 
-	method.gets.apply(engine,[ preload, opts,function(res){
+	method.gets.apply(engine,[ preload, {recursive:true},function(res){
 		setPreload(res);
 		engine.timing.preload=new Date()-t;
 		//console.log(engine.timing.preload,preload)
@@ -96,7 +98,13 @@ var openLocalReactNative=function(kdbid,opts,cb,context) {
 			cb.apply(context,[err]);
 		} else {
 			createLocalEngine(kdb,opts,function(engine){
-				localPool[kdbid]=engine;
+				engine.dbname=kdbid.replace(".kdb","");
+				if (opts.metaonly) { //free the file handle, and do not add to localPool
+					engine.kdb.free();
+				} else {
+					localPool[kdbid]=engine;
+				}
+
 				opening='';
 				cb.apply(context||engine.context,[0,engine]);
 			},context);
@@ -134,7 +142,6 @@ var openLocalKsanagap=function(kdbid,opts,cb,context) {
 	}
 	if (cb) cb.apply(context,[kdbid+" not found"]);
 	return null;
-
 }
 var openLocalNode=function(kdbid,opts,cb,context) {
 	var fs=require('fs');
@@ -159,7 +166,12 @@ var openLocalNode=function(kdbid,opts,cb,context) {
 					cb.apply(context||engine.content,[err]);
 				} else {
 					createLocalEngine(kdb,opts,function(engine){
-						localPool[kdbid]=engine;
+						engine.dbname=kdbid.replace(".kdb","");
+						if (opts.metaonly) { //free the file handle, and do not add to localPool
+							engine.kdb.free();
+						} else {
+							localPool[kdbid]=engine;
+						}
 						opening="";
 						cb.apply(context||engine.context,[0,engine]);
 					},context);
@@ -174,7 +186,7 @@ var openLocalNode=function(kdbid,opts,cb,context) {
 var openLocalFile=function(file,opts,cb,context) {	
     var kdbid=file.name.substr(0,file.name.length-4);
 
-		if (kdbid==opening) {
+		if (kdbid===opening) {
 			throw "nested open kdb!! "+kdbid;
 		}
 		opening=kdbid;
@@ -187,6 +199,7 @@ var openLocalFile=function(file,opts,cb,context) {
 
 		new Kdb.open(file,function(err,handle){
 			createLocalEngine(handle,opts,function(engine){
+				engine.dbname=kdbid.replace(".kdb","");
 				localPool[kdbid]=engine;
 				opening="";
 				cb.apply(context||engine.context,[0,engine]);
@@ -212,6 +225,7 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 			//cb.apply(context,[err]);
 		} else {
 			createLocalEngine(handle,opts,function(engine){
+				engine.dbname=kdbid.replace(".kdb","");
 				localPool[kdbid]=engine;
 				opening="";
 				cb.apply(context||engine.context,[0,engine]);

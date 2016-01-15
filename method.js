@@ -230,9 +230,6 @@ var getFileSegNames=function(i) {
 var getPreloadField=function(user) {
 	var preload=[["meta"],["filenames"],["fileoffsets"],["segoffsets"],["filesegcount"]];
 
-	//,["txtid"],["txtid_idx"],["txtid_invert"]];
-	//["tokens"],["postingslen"] kse will load it
-
 	if (user && user.length) { //user supply preload
 		for (var i=0;i<user.length;i++) {
 			if (preload.indexOf(user[i])==-1) {

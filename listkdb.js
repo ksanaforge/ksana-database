@@ -7,18 +7,26 @@ var listkdb_html5=function(cb,context) {
 	},context||this);		
 }
 var listkdb_rn_ios=function(cb,context) {
-	cb(0,[]);
+	var kfs=require("react-native").NativeModules.KsanaFileSystem;
+	kfs.listKdb(function(kdbs){
+		if (kdbs) {
+			cb.call(context||this,kdbs.split("\uffff").map(function(item){return [item]}));	
+		} else {
+			cb.call(context||this,[]);
+		}
+	});
 }
 var listkdb_rn_android=function(cb,context) {
-	/*
-	kfs=require("react-native-android-kdb");	
-	
-	kfs.readDir(".",function(kdbs){
-			cb.call(this,kdbs);
-	},context||this);		
-*/
-	cb(0,[]);
+	var kfs=require("react-native").NativeModules.KsanaFileSystem;
+	kfs.listKdb(function(kdbs){
+		if (kdbs) {
+			cb.call(context||this,kdbs.split("\uffff").map(function(item){return [item]}));	
+		} else {
+			cb.call(context||this,[]);
+		}
+	});
 }
+
 
 var listkdb_rpc=function() {
 	var fs=require("fs");
