@@ -6,9 +6,13 @@ var listkdb_html5=function(cb,context) {
 			cb.call(this,kdbs);
 	},context||this);		
 }
-var listkdb_rn_ios=function(cb,context) {
+var listkdb_rn_ios=function(opts,cb,context) {
 	var kfs=require("react-native").NativeModules.KsanaFileSystem;
-	kfs.listKdb(function(kdbs){
+	var list=kfs.listKdb;
+	if (opts&&opts.stock) {
+		list=kfs.listStockKdb;
+	}
+	list(function(kdbs){
 		if (kdbs) {
 			cb.call(context||this,kdbs.split("\uffff").map(function(item){return [item]}));	
 		} else {
@@ -16,9 +20,13 @@ var listkdb_rn_ios=function(cb,context) {
 		}
 	});
 }
-var listkdb_rn_android=function(cb,context) {
+var listkdb_rn_android=function(opts,cb,context) {
 	var kfs=require("react-native").NativeModules.KsanaFileSystem;
-	kfs.listKdb(function(kdbs){
+	var list=kfs.listKdb;
+	if (opts&&opts.stock) {
+		list=kfs.listStockKdb;
+	}	
+	list(function(kdbs){
 		if (kdbs) {
 			cb.call(context||this,kdbs.split("\uffff").map(function(item){return [item]}));	
 		} else {
@@ -101,7 +109,13 @@ var listkdb_ksanagap=function(cb,context) {
 		});
 	}
 }
-var listkdb=function(cb,context) {
+var listkdb=function(opts,cb,context) {
+	if (typeof opts==="function") {
+		context=cb;
+		cb=opts;
+		opts={};
+	}
+
 	var platform=require("./platform").getPlatform();
 	var files=[];
 	if (platform=="node" || platform=="node-webkit") {
@@ -109,9 +123,9 @@ var listkdb=function(cb,context) {
 	} else if (platform=="chrome") {
 		listkdb_html5(cb,context);
 	} else if (platform=="react-native-android"){
-		listkdb_rn_android(cb,context);
+		listkdb_rn_android(opts,cb,context);
 	} else if (platform=="react-native-ios"){
-		listkdb_rn_ios(cb,context);
+		listkdb_rn_ios(opts,cb,context);
 	} else {
 		listkdb_ksanagap(cb,context);
 	}

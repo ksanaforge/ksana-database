@@ -273,15 +273,21 @@ var setPath=function(path) {
 	console.log("set path",path)
 }
 //return kdb names in array of string
-var enumKdb=function(cb,context){
-	require("./listkdb")(function(files){
+var enumKdb=function(opts,cb,context){
+	if (typeof opts==="function") {
+		context=cb;
+		cb=opts;
+		opts={};
+	}	
+	require("./listkdb")(opts,function(files){
 		kdbs=files;
 		if (cb) cb.call(context, kdbs.map(function(k){return k[0]}) );
 	});
 }
 
 //return object for each kdb
-var listkdb=function(cb,context){
+var listKdb=function(cb,context){
+
 	if (API.rpc) {
 		API.rpc.list({},function(databases){
 			cb.call(context,databases);
@@ -298,7 +304,7 @@ var listkdb=function(cb,context){
 }
 
 var API={open:open,setPath:setPath, close:closeLocal, enumKdb:enumKdb, bsearch:bsearch,
-kdbs:kdbs,listkdb:listkdb};
+kdbs:kdbs,listKdb:listKdb};
 
 var platform=require("./platform").getPlatform();
 if (platform=="node-webkit" || platform=="node" || platform.substr(0,12)=="react-native") {
