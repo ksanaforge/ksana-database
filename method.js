@@ -51,7 +51,7 @@ var localengine_get=function(path,opts,cb,context) {
 	}
 
 	if (engine.busy) {
-		console.log("engine is busy, getting "+JSON.stringify(this.busy)+" cuurent path:"+JSON.stringify(path));
+		console.log("engine is busy, getting "+JSON.stringify(this.busy)+" current path"+JSON.stringify(path));
 		cb(null);
 	}
 
