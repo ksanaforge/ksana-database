@@ -50,19 +50,20 @@ var localengine_get=function(path,opts,cb,context) {
 		return engine.kdb.get(path,opts);
 	}
 
+/*
 	if (engine.busy) {
 		console.log("engine is busy, getting "+JSON.stringify(this.busy)+" current path"+JSON.stringify(path));
 		cb(null);
 	}
-
+*/
 	if (typeof path==="string") {
 		path=[path];
 	}
 
 	if (typeof path[0] =="string") {
-		engine.busy=path;
+		//engine.busy=path;
 		return engine.kdb.get(path,opts,function(data){
-			engine.busy=null;
+			//engine.busy=null;
 			cb.call(context,data);//return top level keys
 		},context);
 	} else if (typeof path[0] =="object") {
@@ -70,9 +71,9 @@ var localengine_get=function(path,opts,cb,context) {
 			cb.call(context,data);//return top level keys
 		},context);
 	} else {
-		engine.busy=path;
+		//engine.busy=path;
 		engine.kdb.get([],opts,function(data){
-			engine.busy=null;
+			//engine.busy=null;
 			cb.call(context,data);//return top level keys
 		},context);
 	}
