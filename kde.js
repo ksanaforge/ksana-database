@@ -79,7 +79,6 @@ var getLocalTries=function(kdbfn,cb) {
 	return tries;;
 }
 
-var opening="";
 var openLocalReactNative=function(kdbid,opts,cb,context) {
 	if (kdbid.indexOf(".kdb")==-1) kdbid+=".kdb";
 
@@ -236,7 +235,8 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 
 var kde_remote=require("./kde_remote");
 //omit cb for syncronize open
-var open=function(kdbid,opts,cb,context)  {
+
+var _open=function(kdbid,opts,cb,context)  {
 	if (typeof opts=="function") { //no opts
 		if (typeof cb=="object") context=cb;
 		cb=opts;
@@ -266,6 +266,15 @@ var open=function(kdbid,opts,cb,context)  {
 		openLocalReactNative(kdbid,opts,cb,context);	
 	} else {
 		openLocalKsanagap(kdbid,opts,cb,context);	
+	}
+}
+var open=function(kdbid,opts,cb,context) {
+	if (!opening) _open(kdbid,opts,cb,context);
+	else {
+		if (typeof opts==="function") {
+			cb=opts;
+		}
+		cb("opening "+opening);
 	}
 }
 var setPath=function(path) {
