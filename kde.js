@@ -17,6 +17,7 @@ var method=require("./method");
 var analyzer=require("ksana-analyzer");
 
 var opening="";
+
 var createLocalEngine=function(kdb,opts,cb,context) {
 
 	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{} , timing:{}};
@@ -28,13 +29,14 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 	}
 	var setPreload=function(res) {
 		engine.dbname=res[0].name;
-		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
-		//method.hotfix_segoffset_before20150710(engine);
-		//method.buildSegnameIndex(engine);
+		var meta = engine.get("meta");
+		if (meta.indexer===10) {
+			require("./method10").setup(engine);
+		}
 
-		var config=engine.get("meta").config;
-		engine.sidsep=engine.get("meta").sidsep||"@";
+		var config=meta.config;
+		engine.sidsep=meta.sidsep||"@";
 		if (config) engine.analyzer=analyzer.getAPI(config);
 		if (opts.metaonly) engine.meta=engine.get("meta");// kdb will be closed soon, getSync is not available
 	}

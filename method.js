@@ -97,12 +97,7 @@ var getFileRange=function(i) {
 	var filestart=fileoffsets[i], fileend=fileoffsets[i+1]-1;
 
 	var start=bsearch(segoffsets,filestart,true);
-	//if (segOffsets[start]==fileStart) start--;
-	
-	//work around for jiangkangyur
-	//while (segNames[start+1]=="_") start++;
 
-  //if (i==0) start=0; //work around for first file
 	var end=bsearch(segoffsets,fileend,true);
 	return {start:start,end:end};
 }
@@ -228,12 +223,14 @@ var getFileSegNames=function(i) {
 
 
 var getPreloadField=function(user) {
-	var preload=[["meta"],["filenames"],["fileoffsets"],["segoffsets"],["filesegcount"]];
+	var preload=[["meta"],["filenames"],["fileoffsets"],["segoffsets"],["filesegcount"],["segnames"]];
 
 	if (user && user.length) { //user supply preload
 		for (var i=0;i<user.length;i++) {
-			if (preload.indexOf(user[i])==-1) {
-				preload.push(user[i]);
+			if (users[i]) {
+				if (preload.indexOf(user[i])==-1) {
+					preload.push(user[i]);
+				}				
 			}
 		}
 	}
