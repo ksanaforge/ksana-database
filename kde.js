@@ -220,6 +220,7 @@ var openLocalHtml5=function(kdbid,opts,cb,context) {
 
 	new Kdb.open(kdbfn,function(err,handle){
 		if (err) {
+			opening="";
 			var remoteurl=window.location.origin+window.location.pathname+kdbid;
 			if (kdbid.indexOf("/")>-1) remoteurl=window.location.origin+'/'+kdbid;
 			return kde_remote(remoteurl,opts,cb,context);
