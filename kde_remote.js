@@ -84,13 +84,15 @@ var createRemoteEngine=function(kdb,opts,cb,context) {
 		engine.dbname=res[0].name;
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
-		//method.hotfix_segoffset_before20150710(engine);
-		//method.buildSegnameIndex(engine);
+		var meta=engine.get("meta");
+		if (meta.indexer===10) {
+			require("./method10").setup(engine);
+		}
 
-		var config=engine.get("meta").config;
+		var config=meta.config;
 		if (config) engine.analyzer=analyzer.getAPI(config);
 
-		engine.sidsep=engine.get("meta").sidsep||"@";
+		engine.sidsep=meta.sidsep||"@";
 	}
 	var preload=method.getPreloadField(opts.preload);
 	var opts={recursive:true};
