@@ -75,7 +75,7 @@ var getRemote=function(path,opts,cb) {
 
 var createRemoteEngine=function(kdb,opts,cb,context) {
 
-	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{}, fetched:0, traffic:0};
+	var engine={kdb:kdb, queryCache:{}, postingCache:{}, cache:{}, TOC:{}, fetched:0, traffic:0, timing:{}};
 	if (typeof context=="object") engine.context=context;
 	method.setup(engine);
 	engine.get=getRemote;
