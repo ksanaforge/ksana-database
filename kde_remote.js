@@ -85,7 +85,7 @@ var createRemoteEngine=function(kdb,opts,cb,context) {
 		//engine.customfunc=customfunc.getAPI(res[0].config);
 		engine.ready=true;
 		var meta=engine.get("meta");
-		if (meta.indexer===10) {
+		if ((meta.indexer||10)<16) {
 			require("./method10").setup(engine);
 		}
 

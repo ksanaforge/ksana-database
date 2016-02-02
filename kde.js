@@ -31,7 +31,7 @@ var createLocalEngine=function(kdb,opts,cb,context) {
 		engine.dbname=res[0].name;
 		engine.ready=true;
 		var meta = engine.get("meta");
-		if (meta.indexer===10) {
+		if ((meta.indexer||10)<16) {
 			require("./method10").setup(engine);
 		}
 

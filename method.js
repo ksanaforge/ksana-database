@@ -364,11 +364,17 @@ var getTOC=function(opts,cb,context) {
 }
 
 
-
 var parseUti=function(uti){
 	//uti = filename@sid , nfile@sid
 	
 	//return [nfile, sid];
+
+	var isFileNumber=function(f){
+		var r=f.match(/\d+/);
+		return (r&&(r[0]===f));
+	}
+
+
 	var one=false,out=[];
 	if (typeof uti==="string") {
 		uti=[uti];
@@ -377,11 +383,11 @@ var parseUti=function(uti){
 	var filenames=this.get("filenames");
 	out=uti.map(function(u){
 		var r=u.split(this.sidsep);
-		if (isNaN(parseInt(r[0]))) {
+		if (isFileNumber(r[0])) {
+			return [parseInt(r[0]),r[1],filenames[parseInt(r[0])]];
+		} else {
 			var nfile=filenames.indexOf(r[0]);
 			return [nfile,r[1], filenames[nfile]];
-		} else {
-			return [parseInt(r[0]),r[1],filenames[parseInt(r[0])]];
 		}
 		
 	}.bind(this));
@@ -442,9 +448,19 @@ var vpos2uti=function(vpos,cb){
 	var fileseg=this.fileSegFromVpos(vpos);
 	var filenames=this.get("filenames");
 	if (cb) {
-		this.get(["segments",fileseg.file],function(segments){
-			cb(filenames[fileseg.file]+this.sidsep+segments[fileseg.seg]);
+		if (!(fileseg instanceof Array)) {
+			fileseg=[fileseg];
+		}
+
+		var keys=fileseg.map(function(fseg){return ["segments",fseg.file]});
+
+		this.get(keys,function(res){
+				var out=fileseg.map(function(fseg,idx){
+				return filenames[fseg.file]+this.sidsep+res[idx][fseg.seg];
+			}.bind(this));
+			cb(out);
 		}.bind(this));
+
 	} else {
 		//support multiple convert
 		var fseg=fileseg,one=false;
@@ -472,15 +488,15 @@ var uti2vpos=function(uti,cb){ //sync function, ensure segment id is in memory
 	}
 
 	var getvpos=function(){
-		var out=[],nfile;
+		var out=[],nfile,p;
 		for (i=0;i<nfile_sid.length;i+=1) {
 			nfile=nfile_sid[i][0];
 			if (nfile>-1) {
 				var segments=this.get(["segments",nfile]);
-
-				p=segments.indexOf(nfile_sid[i][1]);
-
+				var sid=nfile_sid[i][1];
+				p=segments.indexOf(sid);
 				var absseg=this.fileSegToAbsSeg(nfile,p);
+
 				out.push(segoffsets[absseg]);
 				
 			}
