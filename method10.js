@@ -128,4 +128,4 @@ var setup=function(engine) {
 	engine.prevTxtid=prevTxtid;
 	buildSegnameIndex(engine);
 }
-module.exports={setup:setup,buildSegnameIndex};
+module.exports={setup:setup,buildSegnameIndex:buildSegnameIndex};
