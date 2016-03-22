@@ -403,6 +403,7 @@ var getFileSegFromUti=function(uti,cb){
 	//get all files
 	//load segment id of files
 	//get nseg by indexOf sid
+	var seg;
 	var nfile_sid=uti.map(parseUti.bind(this));
 	var nfiles=nfile_sid.map(function(item){return item[0]});
 	this.loadSegmentId(nfiles,function(){
