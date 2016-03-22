@@ -1,4 +1,5 @@
 var getPlatform=function() {
+	var platform="";
 	if (typeof ksanagap=="undefined") {
 		try {
 			var react_native=require("react-native");
